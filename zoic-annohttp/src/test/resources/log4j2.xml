@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+	<Properties>
+		<Property name="PID">????</Property>
+		<Property name="LOG_EXCEPTION_CONVERSION_WORD">%xwEx</Property>
+		<Property name="LOG_LEVEL_PATTERN">%5p</Property>
+		<Property name="LOG_DATEFORMAT_PATTERN">yyyy-MM-dd HH:mm:ss.SSS</Property>
+		<Property name="CONSOLE_LOG_PATTERN">%clr{%d{${LOG_DATEFORMAT_PATTERN}}}{faint} %clr{${LOG_LEVEL_PATTERN}} %clr{${sys:PID}}{magenta} %clr{---}{faint} %clr{[%15.15t]}{faint} %clr{%-40.40c{1.}}{cyan} %clr{%-4line}{faint} %clr{:}{faint} %m%n${sys:LOG_EXCEPTION_CONVERSION_WORD}</Property>
+		<Property name="FILE_LOG_PATTERN">%d{${LOG_DATEFORMAT_PATTERN}} ${LOG_LEVEL_PATTERN} ${sys:PID} --- [%t] %-40.40c{1.} %clr{%-4line}{faint} : %m%n${sys:LOG_EXCEPTION_CONVERSION_WORD}</Property>
+
+	</Properties>
+	<Appenders>
+		<Console name="console" target="SYSTEM_OUT" follow="true">
+			<PatternLayout pattern="${sys:CONSOLE_LOG_PATTERN}" />
+		</Console>
+
+		<RollingFile name="info-file" fileName="logs/info/current.log" filePattern="logs/info/$${date:yyyy-MM}/%d{yyyy-MM-dd-HH}-%i.log">
+			<PatternLayout>
+				<Pattern>${sys:FILE_LOG_PATTERN}</Pattern>
+			</PatternLayout>
+			<Filters>
+				<ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="NEUTRAL" />
+			</Filters>
+			<Policies>
+				<SizeBasedTriggeringPolicy size="5 MB" />
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+			</Policies>
+			<!-- 限制每天文件个数 -->
+			<DefaultRolloverStrategy compressionLevel="0" max="10" />
+		</RollingFile>
+
+		<RollingFile name="error-file" fileName="logs/error/current.log" filePattern="logs/error/$${date:yyyy-MM}/%d{yyyy-MM-dd-HH}-%i.log">
+			<PatternLayout>
+				<Pattern>${sys:FILE_LOG_PATTERN}</Pattern>
+			</PatternLayout>
+			<Filters>
+				<ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY" />
+			</Filters>
+			<Policies>
+				<SizeBasedTriggeringPolicy size="5 MB" />
+				<TimeBasedTriggeringPolicy interval="1" modulate="true" />
+			</Policies>
+			<!-- 限制每天文件个数 -->
+			<DefaultRolloverStrategy compressionLevel="0" max="10" />
+		</RollingFile>
+
+	</Appenders>
+	<Loggers>
+		<Logger name="org.apache.catalina.startup.DigesterFactory" level="error" />
+		<Logger name="org.apache.catalina.util.LifecycleBase" level="error" />
+		<Logger name="org.apache.coyote.http11.Http11NioProtocol" level="warn" />
+		<logger name="org.apache.sshd.common.util.SecurityUtils" level="warn" />
+		<Logger name="org.apache.tomcat.util.net.NioSelectorPool" level="warn" />
+		<Logger name="org.eclipse.jetty.util.component.AbstractLifeCycle" level="error" />
+		<Logger name="org.hibernate.validator.internal.util.Version" level="warn" />
+		<logger name="org.springframework.boot.actuate.endpoint.jmx" level="warn" />
+		<logger name="com.newegg.mkpl.radial.mybatis.MyBatisCommonsLogAdaptor" level="DEBUG" />
+		<logger name="com.newegg.mkpl.sweet.oauth.OAuthClient" level="DEBUG" />
+		<Root level="INFO">
+			<AppenderRef ref="console" />
+			<AppenderRef ref="info-file" />
+			<AppenderRef ref="error-file" />
+		</Root>
+<!-- 		<logger name="org.springframework.beans.factory.xml.XmlBeanDefinitionReader" level="TRACE" />
+		<logger name="org.springframework.beans.factory.xml.DefaultBeanDefinitionDocumentReader" level="TRACE" /> -->
+		
+	</Loggers>
+</Configuration>
