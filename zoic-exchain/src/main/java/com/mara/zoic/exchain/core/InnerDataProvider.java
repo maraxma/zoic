@@ -1,8 +1,5 @@
 package com.mara.zoic.exchain.core;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.function.Supplier;
 
 /**
@@ -27,13 +24,13 @@ final class InnerDataProvider<T> implements DataProvider<T> {
     /** data可以不做可见性，因为它的值要么是在构造函数中定义，要么是由loaded来控制 */
     private T data = null;
 
-    public InnerDataProvider(@Nullable T data) {
+    public InnerDataProvider(T data) {
         this.data = data;
         this.loaded = true;
         this.cache = true;
     }
 
-    public InnerDataProvider(@NotNull Supplier<T> dataGenerator, boolean cache, boolean generateNow) {
+    public InnerDataProvider(Supplier<T> dataGenerator, boolean cache, boolean generateNow) {
         this.dataGenerator = dataGenerator;
         this.cache = cache;
         if (cache && generateNow) {
@@ -44,7 +41,6 @@ final class InnerDataProvider<T> implements DataProvider<T> {
     }
 
     @Override
-    @Nullable
     public T get() {
         if (cache) {
             if (!loaded) {

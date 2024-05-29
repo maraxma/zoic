@@ -1,7 +1,5 @@
 package com.mara.zoic.exchain.core;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -97,7 +95,7 @@ class DefaultValidationMessage implements ValidationMessage {
         this.message = message;
     }
 
-    public @NotNull String getMessage() {
+    public String getMessage() {
         return message;
     }
 
@@ -118,11 +116,11 @@ class DefaultValidationMessage implements ValidationMessage {
     }
 
     @Override
-    public @NotNull String getValidationName() {
+    public String getValidationName() {
         return validationName;
     }
 
-    public @NotNull String getValidatorName() {
+    public String getValidatorName() {
         return validatorName;
     }
 
@@ -130,17 +128,17 @@ class DefaultValidationMessage implements ValidationMessage {
         return validatorAcceptableClass;
     }
 
-    public @NotNull Class<? extends AbstractValidator<?>> getValidatorClass() {
+    public Class<? extends AbstractValidator<?>> getValidatorClass() {
         return validatorClass;
     }
 
     @Override
-    public @NotNull MessageType getMessageType() {
+    public MessageType getMessageType() {
         return messageType;
     }
 
     @Override
-    public @NotNull ZonedDateTime getReportDateTime() {
+    public ZonedDateTime getReportDateTime() {
         return reportTime;
     }
 
@@ -165,7 +163,7 @@ class DefaultValidationMessage implements ValidationMessage {
     }
 
     @Override
-    public @NotNull String getReportThreadName() {
+    public String getReportThreadName() {
         return reportThreadName;
     }
 
