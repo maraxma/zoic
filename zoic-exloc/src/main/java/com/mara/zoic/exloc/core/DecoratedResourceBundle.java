@@ -1,6 +1,5 @@
 package com.mara.zoic.exloc.core;
 
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Enumeration;
 import java.util.ResourceBundle;
@@ -19,7 +18,7 @@ public class DecoratedResourceBundle extends ResourceBundle {
     }
 
     @Override
-    protected Object handleGetObject(@NotNull String key) {
+    protected Object handleGetObject(String key) {
         return resourceBundle.getObject(key);
     }
 

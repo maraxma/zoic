@@ -1,6 +1,5 @@
 package com.mara.zoic.exloc.core;
 
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,11 +27,10 @@ public class XmlResourceBundle extends ResourceBundle {
     }
 
     @Override
-    protected Object handleGetObject(@NotNull String key) {
+    protected Object handleGetObject(String key) {
         return properties.getProperty(key);
     }
 
-    @NotNull
     @Override
     public Enumeration<String> getKeys() {
         return Collections.enumeration(properties.stringPropertyNames());
