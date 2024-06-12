@@ -294,9 +294,42 @@ AnnoHttpClients.registerRequestBodyConverter(MyRequestBodyConverter.class);
 AnnoHttpClients.registerResponseConverter(MyResponseConverter.class);
 ```
 
+## 请求方法返回参数一览表
+
+该表描述了annohttp目前所支持的请求方法返回参数类型。
+
+参数类型既可以直接书写在接口方法的返回类型，又可以作为PreparingRequest的参数化类型。
+
+注意，除开一些特殊的类型，大部分类型都是指代响应体的，它用于告诉annohttp使用者期望将响应体转换为什么类型。
+
+示例：
+
+```java
+public interface ItemService {
+    // 以注解方式添加代理（SPEL）
+    @Request(url = "http://yourhost:8080/item/get/{id}")
+    _返回类型_ getItemInfo(@PathVar("id") String id, @Headers Map<String, String> headers);
+
+    @Request(url = "http://yourhost:8080/item/get/{id}")
+    PreparingRequest<_返回类型_> getItemInfo(@PathVar("id") String id, @Headers Map<String, String> headers);
+}
+```
+
+| 类型 | 说明 |
+|-----|-----|
+|任意Bean|将响应体转换为这个指定的JavaBean，需要配合响应头中的Content-Type做转换，比如"application/json"，此时annohttp会将响应体看做JSON字符串并将其按照JSON转换为JavaBean，请注意响应头中的Content-Type值的书写规范。同理annohttp也支持xml和yaml的转换。还有一种特殊情况，当Content-Type的值为"application/octet-stream"时，annohttp会尝试将响应体直接以Java序列化的方式将流转换为JavaBean|
+|void|只关心请求，不关心任何响应|
+|Void|同上，返回时会被置为唯一值`null`|
+|StatsLine|只关心StatusLine（响应行）|
+|Header[]|只关心响应头|
+|InputStream|只关心响应体，以流形式返回，请注意自行关闭|
+|byte[]|只关心响应体，以字节数组形式返回|
+|ClassicHttpResponse|只关心响应体，以ClassicHttpResponse形式返回（这是HttpClient5的经典响应类型，可以自由从中获取到想要的信息，注意使用完毕关闭流）|
+
+
 ## 注解一览表
 
-可供使用的注解全部位于org.mosin.http.annotation包下。
+可供使用的注解全部位于com.mara.zoic.annohttp.annotation包下。
 
 | 名称     | 目标                             | 作用                           |
 | -------- | ------------------------------- | ------------------------------ |

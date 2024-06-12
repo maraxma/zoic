@@ -7,6 +7,8 @@ import com.mara.zoic.annohttp.http.exception.RequestFailedException;
 import com.mara.zoic.annohttp.http.exception.UnexpectedResponseException;
 import com.mara.zoic.annohttp.http.proxy.RequestProxy;
 import com.mara.zoic.annohttp.http.request.converter.RequestBodyConverter;
+import com.mara.zoic.annohttp.http.response.converter.ResponseBodyConverter;
+
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -25,11 +27,11 @@ import java.util.function.Supplier;
  * 代表一个已经准备好的请求。
  * <p>在接口中任何标注了 {@link Request} 的抽象方法除了可以使用期望的实体类来作为返回，还可以使用此接口类作为返回。
  * <p>使用此接口作为返回意味着该方法在被调用的时候请求不会立即进行HTTP请求，而是生成一个 {@link PreparingRequest} 对象供用户使用。
- * <p>{@link PreparingRequest} 对象提供了一些在请求前做最后准备的方法，供用户再次请求头、请求参数等，同时提供同步请求、异步请求、可操作对象请求等方法。
+ * <p>{@link PreparingRequest} 对象提供了一些在请求前做最后准备的方法，供用户再次设定请求头、请求参数等，同时提供同步请求、异步请求、可操作对象请求（{@link #requestOperable()}）等方法。
  * <p>如果你的请求方法期望的是通过异步的手段请求，亦或是在请求前需要设定动态计算的参数，又或者是你想要得到方便转换的的响应对象，那么你可以将此作为请求方法的返回类型。
  * <p>{@link PreparingRequest} 的泛型参数T需要指定你期望的返回结果，它可以是 {@link String}、{@link Map}、{@link ClassicHttpResponse}、{@link InputStream}、Java Bean
- * 甚至是任何类型，annohttp将使用内置的转换器（{@link AbstractResponseBodyConverter}）尝试将其转换。当然，你也可以自定义你的转换器。如果需要定义你的转换器，
- * 实现 {@link AbstractResponseBodyConverter} 并将其使用 {@link AnnoHttpClients#registerResponseBodyConverter(AbstractResponseBodyConverter[])} 注册。注册后当符合条件时将优先使用
+ * 甚至是任何类型，annohttp将使用内置的转换器（{@link ResponseBodyConverter}）尝试将其转换。当然，你也可以自定义你的转换器。如果需要定义你的转换器，
+ * 实现 {@link ResponseBodyConverter} 并将其使用 {@link AnnoHttpClients#registerResponseBodyConverter(AbstractResponseBodyConverter[])} 注册。注册后当符合条件时将优先使用
  * 用户自定义的转换器。
  * <p>此类中的大部分方法（{@link #request()}、{@link #requestOperable()}）都是针对<b>响应体（Response Body）的，因此如果需要处理响应体之外的内容（如状态行、响应头）等请使用
  * {@link #requestClassically()}得到 {@link ClassicHttpResponse} 对象然后自行获得。或者直接设定 Header[] 、{@link org.apache.hc.core5.http.message.StatusLine} 作为返回值。</b></p>
@@ -39,7 +41,7 @@ import java.util.function.Supplier;
  * @since 1.0.0 2022-07-08
  * @see AnnoHttpClients
  * @see RequestBodyConverter
- * @see AbstractResponseBodyConverter
+ * @see ResponseBodyConverter
  */
 public sealed interface PreparingRequest<T> permits PreparingRequestImpl {
 

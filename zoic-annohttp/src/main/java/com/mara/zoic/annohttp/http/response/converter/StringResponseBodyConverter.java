@@ -27,7 +27,7 @@ public class StringResponseBodyConverter extends AbstractAutoCloseEntityResponse
 
     @Override
     public boolean canConvert(ClassicHttpResponse httpResponse, HttpClientMetadata metadataContentType, ContentType computedResponseContentType, Charset computedResponseCharset) {
-        return metadataContentType.getRequestMethodActualType() instanceof @SuppressWarnings("rawtypes")Class clazz && String.class.isAssignableFrom(clazz)
+        return metadataContentType.getRequestMethodActualType() == String.class
                 && httpResponse.getEntity() != null && httpResponse.getEntity().isStreaming();
     }
 }

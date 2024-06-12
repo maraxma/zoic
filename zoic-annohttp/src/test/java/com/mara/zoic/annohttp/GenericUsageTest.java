@@ -483,4 +483,24 @@ public class GenericUsageTest {
         Assertions.assertTrue(e.getMessage() != null && e.getMessage().contains("You cannot use more than 1 @Body"));
     }
 
+    @Test
+    @DisplayName("普通测试 -- 默认GET方式，使用void作为返回")
+    void baseTest21() {
+
+        interface Client {
+            @Request(url = "/testXXX", successCondition = "true")
+            void baseRequest(@Url String url, @Method HttpMethod method, @Body Map<String, Object> body);
+        }
+
+        Client c = AnnoHttpClients.create(Client.class, "http://localhost:8081/");
+        c.baseRequest("/test", HttpMethod.POST, Map.of());
+
+        interface Client2 {
+            @Request(url = "/testXXX", successCondition = "true")
+            PreparingRequest<Void> baseRequest(@Url String url, @Method HttpMethod method, @Body Map<String, Object> body);
+        }
+        Client2 c2 = AnnoHttpClients.create(Client2.class, "http://localhost:8081/");
+        PreparingRequest<Void> pr2 = c2.baseRequest("/test", HttpMethod.POST, Map.of());
+        Assertions.assertEquals(null, pr2.request());
+    }
 }

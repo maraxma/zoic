@@ -29,6 +29,7 @@ public class ResponseConverterCache {
         map.put(Xml2BeanResponseBodyConverter.class, new Xml2BeanResponseBodyConverter());
         map.put(Yaml2BeanResponseBodyConverter.class, new Yaml2BeanResponseBodyConverter());
         map.put(InputStream2JavaObjectResponseBodyConverter.class, new InputStream2JavaObjectResponseBodyConverter());
+        map.put(VoidResponseConverter.class, new VoidResponseConverter());
         DEFAULT_REG_MAP = Collections.unmodifiableMap(map);
     }
 

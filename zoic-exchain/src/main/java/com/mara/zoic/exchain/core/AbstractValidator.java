@@ -1,6 +1,8 @@
 package com.mara.zoic.exchain.core;
 
 
+import com.mara.zoic.exchain.core.ValidationMessage.MessageType;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Duration;
@@ -12,8 +14,6 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import com.mara.zoic.exchain.core.ValidationMessage.MessageType;
 
 /**
  * 抽象验证器。
@@ -226,31 +226,5 @@ public abstract class AbstractValidator<T> {
         if (o == null || (o instanceof String && "".equals(((String) o).trim()))) {
             throw new IllegalArgumentException(message);
         }
-    }
-
-    public static void main(String[] args) throws InterruptedException {
-        // ZonedDateTime now = ZonedDateTime.now();
-        // Thread.sleep(1000);
-        // ZonedDateTime now2 = ZonedDateTime.now();
-        // System.out.println(now2.toInstant().toEpochMilli() - now.toInstant().toEpochMilli());
-        //
-        // System.out.println("/dddd/".substring(1, 5));
-        //
-        // System.out.println(Thread.currentThread().getStackTrace()[2]);
-
-        System.out.println(String.class.isLocalClass());
-        System.out.println(AbstractValidator.class.isLocalClass());
-        class mara {
-            String name;
-            int age;
-        }
-        System.out.println(mara.class.isLocalClass());
-        var user = new User(1, "mara");
-        System.out.println(user);
-    }
-
-    private static void test(Class<?> clazz) {}
-
-    record User(Integer id, String name) {
     }
 }
