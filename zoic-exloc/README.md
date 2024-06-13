@@ -6,7 +6,7 @@ zoic-exloc是zoic工具包下的本地化框架，使用规范化的方式引导
 
 Java中支持i18n的类是Locale和ResourceBundle。Locale代表的地域或者国家，但是Locale同样会存储语言，可以认为是一个语言+地域的表达形式。需要注意的是，在Java、C++等语言中Locale的表达形式为“Lang_Region”，比如“zh_CN”，使用的是下划线而非一些资料提及的连字符（减号）。
 
-#### 使用方法
+## 使用方法
 
 1. 新建ResourceBundle，IDEA用户可以直接右键--> New --> ResourceBundle
 
@@ -60,3 +60,35 @@ String lt_enum_zh_cn = TestI18nCodes.I0001.getLocalizedString(Locale.SIMPLIFIED_
 结构化开发所带来的好处就是代码清晰，且使用枚举可以得到IDE的提示，不容易出错。
 
 一般来说，项目中的国际化翻译枚举和语言包应当由另一个专一的系统生成，该系统还应负责同步生成其他语言的国际化语言包（如前端需要使用的JS或者TS文件）以达到统一的标准。在通过系统下载这些语言包后再在项目中使用，此时可以得到IDE的提示支持。
+
+## 附：使用`.properties`或者其他类型的文件作为语言包
+
+exloc目前默认支持`.xml`文件作为语言包，但是也可以使用`.properties`或者其他类型的文件作为语言包。
+
+如果确实需要使用`.properties`文件作为语言包（不推荐），那么只需要启用`ResourceBundle.Control`即可。exloc为`LocalizedTag`接口增加了默认方法
+`getResourceBundleContrl`，此方提供给子类重写（不重写即为使用默认的`XmlResourceBundleControl`）用于使用自定义的`ResourceBundle.Control`。
+
+```java
+import java.util.ResourceBundle;
+
+enum TestI18nCodes implements LocalizedTag {
+
+    I0001;
+
+    /* 你可在这儿书写更多的ID */
+
+    @Override
+    public ResourceBundle.Control getResourceBundleControl() {
+        // 使用默认的语言包控制器，其支持 .properties 文件
+        return ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_DEFAULT);
+    }
+
+    @Override
+    public String tag() {
+        return "i18n/testI18n" + ":" + name();
+    }
+}
+
+String lt_enum_zh_cn = TestI18nCodes.I0001.getLocalizedString(Locale.SIMPLIFIED_CHINESE);
+```
+如果需要得到其他文件格式（如`.txt`）的语言包支持，那么你先要自行继承实现`ResourceBundle.Control`以及相应的`ResourceBundle`，然后重写`getResourceBundleControl`方法。
