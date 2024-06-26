@@ -15,39 +15,39 @@ public interface Sequencable extends Closeable {
 
     /**
      * 当做输入流返回。
-     * @return 输入流
+     * @return 输入流。当不存在输入流时返回null
      */
     InputStream asInputStream();
 
     /**
      * 当做字符串返回。字符串采用 {@link String#String(byte[], String)} 构造，并使用默认的UTF-8编码。
-     * @return 字符串
+     * @return 字符串。当不存在输入流时返回null
      */
     String asSequenceToString();
 
     /**
      * 当做字符串返回。字符串采用 {@link String#String(byte[], String)} 构造，并使用指定的字符编码。
      * @param charset 字符编码
-     * @return 字符串
+     * @return 字符串。当不存在输入流时返回null
      */
     String asSequenceToString(String charset);
 
     /**
      * 当做字节数组返回。
-     * @return 字节数组
+     * @return 字节数组。当不存在输入流时返回null
      */
     byte[] asSequenceToBytes();
 
     /**
      * 当做Java序列化后的Object返回。
-     * @return 采用Java反序列化后的对象
+     * @return 采用Java反序列化后的对象。当不存在输入流时返回null
      */
     Object asJavaSerializedSequenceToObject();
 
     /**
      * 当做Java序列化后的Object返回。
      * @param objectClass 对象的类型
-     * @return 采用Java反序列化后的对象
+     * @return 采用Java反序列化后的对象。当不存在输入流时返回null
      * @param <T> 对象的类型
      */
     <T> T asJavaSerializedSequenceToObject(Class<T> objectClass);
