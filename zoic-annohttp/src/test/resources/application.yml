@@ -1,4 +1,4 @@
 annohttp:
-  service-base-packages: [org.mosin.annohttp.httpservice]
+  service-base-packages: [com.mara.zoic.annohttp.httpservice]
   flow-redirect: false
   keep-alive: false

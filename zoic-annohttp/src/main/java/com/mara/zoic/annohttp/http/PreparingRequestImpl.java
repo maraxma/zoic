@@ -1,7 +1,68 @@
 package com.mara.zoic.annohttp.http;
 
 
-import com.mara.zoic.annohttp.annotation.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.client5.http.classic.methods.HttpOptions;
+import org.apache.hc.client5.http.classic.methods.HttpPatch;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
+import org.apache.hc.client5.http.classic.methods.HttpTrace;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.message.BasicHeader;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.net.URIBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.expression.EvaluationContext;
+
+import com.mara.zoic.annohttp.annotation.AnnoHttpService;
+import com.mara.zoic.annohttp.annotation.Body;
+import com.mara.zoic.annohttp.annotation.FormField;
+import com.mara.zoic.annohttp.annotation.FormFields;
+import com.mara.zoic.annohttp.annotation.Headers;
+import com.mara.zoic.annohttp.annotation.PathVar;
+import com.mara.zoic.annohttp.annotation.PathVars;
+import com.mara.zoic.annohttp.annotation.Proxy;
+import com.mara.zoic.annohttp.annotation.Queries;
+import com.mara.zoic.annohttp.annotation.Query;
+import com.mara.zoic.annohttp.annotation.Request;
+import com.mara.zoic.annohttp.annotation.Url;
 import com.mara.zoic.annohttp.http.exception.NoApplicableResponseBodyConverterException;
 import com.mara.zoic.annohttp.http.exception.RequestFailedException;
 import com.mara.zoic.annohttp.http.exception.UnexpectedResponseException;
@@ -17,38 +78,8 @@ import com.mara.zoic.annohttp.http.response.converter.ResponseConverter;
 import com.mara.zoic.annohttp.http.response.converter.ResponseConverterCache;
 import com.mara.zoic.annohttp.http.spel.SpelUtils;
 import com.mara.zoic.annohttp.http.visitor.ResponseVisitor;
+import com.mara.zoic.annohttp.lifecycle.AnnoHttpLifecycle;
 import com.mara.zoic.annohttp.testsup.PreparingRequestContainer;
-import org.apache.hc.client5.http.classic.methods.*;
-import org.apache.hc.client5.http.config.RequestConfig;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.*;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.message.BasicHeader;
-import org.apache.hc.core5.http.message.BasicNameValuePair;
-import org.apache.hc.core5.net.URIBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.expression.EvaluationContext;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
 
@@ -649,6 +680,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
     @Override
     @SuppressWarnings("unchecked")
     public T request() {
+    	executeLifecycleBeforeRequestingMethod();
         ClassicHttpResponse httpResponse;
         try {
             httpResponse = executeRequest();
@@ -686,16 +718,18 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                 computedResponseCharset = Charset.forName(userResponseCharset);
             }
 
+            ResponseConverter responseConverter;
             Class<? extends ResponseConverter> converterClass = metadata.getRequestAnnotation().responseConverter();
-            if (converterClass == AutoResponseConverter.class) {
-                return (T) ResponseConverterCache.AUTO_RESPONSE_BODY_CONVERTER.convert(httpResponse, metadata, computedResponseContentType, computedResponseCharset);
-            } else {
-                ResponseConverter responseConverter = ResponseConverterCache.getAll().get(converterClass);
+            if (converterClass != AutoResponseConverter.class) {
+            	responseConverter = ResponseConverterCache.getAll().get(converterClass);
                 if (responseConverter == null) {
                     throw new NoApplicableResponseBodyConverterException("Cannot find response convert '" + converterClass + "', please register it before using");
                 }
-                return (T) responseConverter.convert(httpResponse, metadata, computedResponseContentType, computedResponseCharset);
+            } else {
+            	responseConverter = ResponseConverterCache.AUTO_RESPONSE_CONVERTER;
             }
+            executeLifecycleAfterRequestedMethod(httpResponse, responseConverter);
+            return (T) responseConverter.convert(httpResponse, metadata, computedResponseContentType, computedResponseCharset);
         } finally {
             // 出现或者不出现异常，视返回体的类型决定是否关闭资源
             // 目前只有两种类型的返回不能关闭资源 1) InputStream  2) HttpResponse
@@ -1041,6 +1075,18 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
         if (requestException != null) {
             throw new RuntimeException(requestException);
         }
+    }
+    
+    protected void executeLifecycleBeforeRequestingMethod() {
+    	for (AnnoHttpLifecycle lc : AnnoHttpLifecycleInstancesCahce.getAnnoHttpLifecycleInstances()) {
+    		lc.beforeClientRequesting(metadata, this);
+    	}
+    }
+    
+    protected void executeLifecycleAfterRequestedMethod(HttpResponse response, ResponseConverter responseConverter) {
+    	for (AnnoHttpLifecycle lc : AnnoHttpLifecycleInstancesCahce.getAnnoHttpLifecycleInstances()) {
+    		lc.afterClientRequested(metadata, response, responseConverter);
+    	}
     }
 
     private void addCoverable(List<CoverableNameValuePair> existing, CoverableNameValuePair incoming) {

@@ -1,6 +1,12 @@
 package com.mara.zoic.annohttp.http;
 
 
+import java.lang.reflect.Proxy;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+
 import com.mara.zoic.annohttp.annotation.Request;
 import com.mara.zoic.annohttp.http.protocol.ProtocolHandler;
 import com.mara.zoic.annohttp.http.protocol.ProtocolHandlerMapping;
@@ -8,14 +14,9 @@ import com.mara.zoic.annohttp.http.request.converter.AutoRequestBodyConverter;
 import com.mara.zoic.annohttp.http.request.converter.RequestBodyConverter;
 import com.mara.zoic.annohttp.http.request.converter.RequestBodyConverterCache;
 import com.mara.zoic.annohttp.http.response.converter.AutoResponseConverter;
-import com.mara.zoic.annohttp.http.response.converter.ResponseBodyConverter;
+import com.mara.zoic.annohttp.http.response.converter.ResponseConverter;
 import com.mara.zoic.annohttp.http.response.converter.ResponseConverterCache;
-
-import java.lang.reflect.Proxy;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
+import com.mara.zoic.annohttp.lifecycle.AnnoHttpLifecycle;
 
 /**
  * AnnoHttp的主要入口API，负责帮助用户创建请求实例。
@@ -54,9 +55,12 @@ public final class AnnoHttpClients {
      */
     @SuppressWarnings("unchecked")
     public static <T> T create(Class<T> annoHttpClass, String baseUrl) {
+    	executeLifecycleBeforeCreatingMethod(annoHttpClass);
         // 动态代理
         // 都是基于接口的，因此使用JDK自带的动态代理即可
-        return (T) Proxy.newProxyInstance(annoHttpClass.getClassLoader(), new Class<?>[]{annoHttpClass}, InvocationHandlerHolder.getOrCreateAnnoHttpClientInvocationHandler(baseUrl));
+        T client = (T) Proxy.newProxyInstance(annoHttpClass.getClassLoader(), new Class<?>[]{annoHttpClass}, InvocationHandlerHolder.getOrCreateAnnoHttpClientInvocationHandler(baseUrl));
+        executeLifecycleAfterCreatedMethod(client);
+        return client;
     }
 
     /**
@@ -69,9 +73,12 @@ public final class AnnoHttpClients {
      */
     @SuppressWarnings("unchecked")
     public static <T> T create(Class<T> annoHttpClass, Function<HttpClientMetadata, String> baseUrlProvider) {
+    	executeLifecycleBeforeCreatingMethod(annoHttpClass);
         // 动态代理
         // 都是基于接口的，因此使用JDK自带的动态代理即可
-        return (T) Proxy.newProxyInstance(annoHttpClass.getClassLoader(), new Class<?>[]{annoHttpClass}, new AnnoHttpClientInvocationHandler(baseUrlProvider));
+        T client = (T) Proxy.newProxyInstance(annoHttpClass.getClassLoader(), new Class<?>[]{annoHttpClass}, new AnnoHttpClientInvocationHandler(baseUrlProvider));
+        executeLifecycleAfterCreatedMethod(client);
+        return client;
     }
 
     /**
@@ -85,13 +92,13 @@ public final class AnnoHttpClients {
     }
 
     /**
-     * 注册响应体转换器。你可以定义自己的转换器，然后使用默认的 {@link AutoResponseConverter} 来查找并应用。
+     * 注册响应转换器。你可以定义自己的转换器，然后使用默认的 {@link AutoResponseConverter} 来查找并应用。
      * <p>你也可以直接将自己的转换器写到 {@link Request#responseConverter()} 上。
      *
-     * @param responseBodyConverters 请求体转换器
+     * @param responseConverters 响应转换器
      */
-    public static void registerResponseBodyConverter(ResponseBodyConverter... responseBodyConverters) {
-        ResponseConverterCache.addUserConverters(responseBodyConverters);
+    public static void registerResponseConverter(ResponseConverter... responseConverters) {
+        ResponseConverterCache.addUserConverters(responseConverters);
     }
 
     /**
@@ -102,18 +109,37 @@ public final class AnnoHttpClients {
         ProtocolHandlerMapping.addMappings(protocolHandlers);
     }
 
-    private static class InvocationHandlerHolder {
-        private static final AnnoHttpClientInvocationHandler INSTANCE_NO_BASE_URL = new AnnoHttpClientInvocationHandler("");
+    /**
+	 * 添加 annohttp 生命周期实例。
+	 * @param annoHttpLifecycles 生命周期实例。存在多个实例时按照添加的顺序执行
+	 */
+	public static void addAnnoHttpLifecycleInstances(AnnoHttpLifecycle... annoHttpLifecycles) {
+		AnnoHttpLifecycleInstancesCahce.addAnnoHttpLifecycleInstances(annoHttpLifecycles);
+	}
+	
+	private static void executeLifecycleBeforeCreatingMethod(Class<?> clazz) {
+		for (AnnoHttpLifecycle lifecycle : AnnoHttpLifecycleInstancesCahce.getAnnoHttpLifecycleInstances()) {
+    		lifecycle.beforeClientCreating(clazz);
+    	}
+	}
+	
+	private static void executeLifecycleAfterCreatedMethod(Object client) {
+		for (AnnoHttpLifecycle lifecycle : AnnoHttpLifecycleInstancesCahce.getAnnoHttpLifecycleInstances()) {
+    		lifecycle.afterClientCreated(client);
+    	}
+	}
+
+	private static class InvocationHandlerHolder {
+        private static final AnnoHttpClientInvocationHandler INSTANCE_WITHOUT_BASE_URL = new AnnoHttpClientInvocationHandler("");
 
         private static final Map<String, AnnoHttpClientInvocationHandler> INSTANCES = new ConcurrentHashMap<>();
 
         static AnnoHttpClientInvocationHandler getOrCreateAnnoHttpClientInvocationHandler(String baseUrl) {
             if (null == baseUrl || "".equals(baseUrl.trim())) {
-                return INSTANCE_NO_BASE_URL;
+                return INSTANCE_WITHOUT_BASE_URL;
             } else {
                 return INSTANCES.compute(baseUrl.toLowerCase().trim(), (s, annoHttpClientInvocationHandler) -> Objects.requireNonNullElseGet(annoHttpClientInvocationHandler, () -> new AnnoHttpClientInvocationHandler(baseUrl)));
             }
         }
     }
-
 }

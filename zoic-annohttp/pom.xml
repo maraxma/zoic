@@ -74,7 +74,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-expression</artifactId>
-            <version>6.1.4</version>
+            <version>6.1.13</version>
         </dependency>
 
         <!-- Spring（Optional） -->
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
-            <version>3.2.3</version>
+            <version>3.3.4</version>
         </dependency>
 
         <!-- JUnit -->
@@ -114,7 +114,7 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
-            <version>4.5.4</version>
+            <version>4.5.10</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -126,7 +126,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>3.2.3</version>
+            <version>3.3.4</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -136,6 +136,10 @@
                 <exclusion>
                     <artifactId>logback-core</artifactId>
                     <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                    <groupId>org.springframework.boot</groupId>
                 </exclusion>
             </exclusions>
             <!--            <exclusions>-->
@@ -147,8 +151,14 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+            <version>3.3.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
-            <version>3.0.4</version>
+            <version>3.3.4</version>
             <optional>true</optional>
         </dependency>
 

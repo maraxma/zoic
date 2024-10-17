@@ -93,6 +93,10 @@ public final class HyperLogLog {
         }
     }
 
+    /**
+     * 根据桶的个数获得一个特征值。
+     * @return
+     */
     private double getAlpha() {
         switch (bucketCount) {
             case 1/*2^0*/:
@@ -158,7 +162,7 @@ public final class HyperLogLog {
      * 计算需要多少的位来存储特征数据。
      * <p>这是为极值节省内存而存在的，计算出来后可以以较少的变量来存储特HyperLogLog特征信息。</p>
      *
-     * @return
+     * @return 需要多少的位来存储特征数据
      */
     private int computeSpace() {
         // 特征最大即为最高位是1
@@ -170,14 +174,14 @@ public final class HyperLogLog {
     }
 
     public static void main(String[] args) {
-        // HyperLogLog hyperLogLog = new HyperLogLog((byte) 17);
-        // int exact = 10000;
-        // for (int i = 1; i <= exact; i++) {
-        //     hyperLogLog.add(i + "");
-        //     long count = hyperLogLog.count();
-        //     System.out.println("实际: " + i + ", HLL: " + count + ", 误差: " + (1D - Math.abs(i * 1D/ count)) * 100 +
-        //             "%");
-        // }
+         HyperLogLog hyperLogLog = new HyperLogLog((byte) 17);
+         int exact = 10000000;
+         for (int i = 1; i <= exact; i++) {
+             hyperLogLog.add(i + "");
+             long count = hyperLogLog.count();
+             System.out.println("实际: " + i + ", HLL: " + count + ", 误差: " + (1D - Math.abs(i * 1D/ count)) * 100 +
+                     "%");
+         }
 
         // System.out.println(bitSizeFor(2));
 

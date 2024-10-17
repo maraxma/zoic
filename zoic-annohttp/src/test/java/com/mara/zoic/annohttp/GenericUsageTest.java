@@ -2,9 +2,9 @@ package com.mara.zoic.annohttp;
 
 
 import com.mara.zoic.annohttp.annotation.*;
-import com.mara.zoic.annohttp.http.AnnoHttpClients;
-import com.mara.zoic.annohttp.http.HttpMethod;
-import com.mara.zoic.annohttp.http.PreparingRequest;
+import com.mara.zoic.annohttp.http.*;
+import com.mara.zoic.annohttp.http.response.converter.ResponseConverter;
+import com.mara.zoic.annohttp.lifecycle.AnnoHttpLifecycle;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
@@ -18,6 +18,7 @@ import org.junit.jupiter.api.function.Executable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * 展示 annothttp 常规用法的测试类。
@@ -502,5 +503,46 @@ public class GenericUsageTest {
         Client2 c2 = AnnoHttpClients.create(Client2.class, "http://localhost:8081/");
         PreparingRequest<Void> pr2 = c2.baseRequest("/test", HttpMethod.POST, Map.of());
         Assertions.assertEquals(null, pr2.request());
+    }
+    
+    @Test
+    @DisplayName("普通测试 -- 默认GET方式，使用生命周期接口")
+    void baseTest22() {
+    	interface Client {
+            @Request(url = "/testXXX", successCondition = "true")
+            org.apache.hc.core5.http.Header[] baseRequest(@Url String url, @Method HttpMethod method, @Body Map<String, Object> body);
+        }
+    	class LifecycleDemo implements AnnoHttpLifecycle {
+
+    		@Override
+    		public void beforeClientCreating(Class<?> clientClass) {
+
+    		}
+
+    		@Override
+    		public void afterClientCreated(Object client) {
+
+    		}
+
+    		@Override
+    		public void beforeClientRequesting(HttpClientMetadata httpClientMetadata, PreparingRequest<?> preparingRequest) {
+    			if (httpClientMetadata.getServiceClientClass() == Client.class) {
+    				preparingRequest.customRequestHeaders(t -> t.add(new CoverableNameValuePair("X-Lifecycle", "Added")));
+    			}
+    		}
+
+    		@Override
+    		public void afterClientRequested(HttpClientMetadata httpClientMetadata, HttpResponse httpResponse,
+    				ResponseConverter responseConverter) {
+
+    		}
+    	}
+    	
+    	Client c = AnnoHttpClients.create(Client.class, "http://localhost:8081/");
+    	AnnoHttpClients.addAnnoHttpLifecycleInstances(new LifecycleDemo());
+        org.apache.hc.core5.http.Header[] headers = c.baseRequest("/test", HttpMethod.POST, Map.of());
+        Optional<org.apache.hc.core5.http.Header> op = Stream.of(headers).filter(e -> e.getName().equals("X-Lifecycle")).findFirst();
+        Assertions.assertTrue(op.isPresent());
+        Assertions.assertTrue(op.get().getValue().equals("Added"));
     }
 }

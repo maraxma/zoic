@@ -1,8 +1,10 @@
 package com.mara.zoic.annohttp.annotation;
 
 import com.mara.zoic.annohttp.http.AnnoHttpClients;
+import com.mara.zoic.annohttp.http.HttpClientMetadata;
 
 import java.lang.annotation.*;
+import java.util.function.Function;
 
 /**
  * 声明一个接口作为annohttp服务接口（HTTP客户端）。
@@ -14,4 +16,14 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 public @interface AnnoHttpService {
     String baseUrl() default "";
+
+    Class <? extends Function<HttpClientMetadata, String>> baseUrlFunctionClass() default EmptyBaseUrlFunction.class;
+
+    class EmptyBaseUrlFunction implements Function<HttpClientMetadata, String> {
+
+        @Override
+        public String apply(HttpClientMetadata annoHttpClientMetadata) {
+            return "";
+        }
+    }
 }

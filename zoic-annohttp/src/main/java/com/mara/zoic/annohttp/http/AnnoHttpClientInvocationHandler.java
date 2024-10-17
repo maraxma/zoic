@@ -31,9 +31,9 @@ public class AnnoHttpClientInvocationHandler implements InvocationHandler {
 
         // 组装AnnotationHttpClientMetadata
         AnnoHttpClientMetadata metadata = new AnnoHttpClientMetadata();
-        metadata.serviceClient = this;
+        metadata.serviceClient = proxy;
         metadata.requestMethodReturnClass = returnType;
-        metadata.serviceClientClass = this.getClass();
+        metadata.serviceClientClass = method.getDeclaringClass();
         metadata.requestMethod = method;
         metadata.requestArguments = args == null ? new Object[0] : Arrays.copyOf(args, args.length);
         metadata.requestAnnotation = requestAnno;

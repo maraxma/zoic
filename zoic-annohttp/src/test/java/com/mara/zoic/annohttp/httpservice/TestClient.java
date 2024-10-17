@@ -6,6 +6,6 @@ import com.mara.zoic.annohttp.annotation.Request;
 
 @AnnoHttpService(baseUrl = "http://localhost:8081/")
 public interface TestClient {
-    @Request(url = "/item")
+    @Request(url = "/test")
     String getItemName(@Query("ItemNo") String itemNo);
 }

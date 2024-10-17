@@ -74,7 +74,7 @@ public interface HttpClientMetadata {
     Charset getResponseCharset();
 
     /**
-     * 获得发起请求的客户端类，一般是一个标注了@Request的接口。
+     * 获得发起请求的客户端类，一般是一个标注了@Request的方法所在的接口。
      *
      * @return 客户端类
      */
@@ -83,9 +83,9 @@ public interface HttpClientMetadata {
     }
 
     /**
-     * 获得发起请求的客户端实例，一般是一个标注了@Request的接口的实例。
+     * 获得发起请求的客户端实例，一般是一个标注了@Request的方法所在接口的实例的代理实例。
      *
-     * @return 客户端实例
+     * @return 客户端实例（被代理后的实力）
      */
     default Object getServiceClient() {
         return null;
@@ -94,7 +94,7 @@ public interface HttpClientMetadata {
     /**
      * 获得标注在客户端接口上的 {@link Request} 实例。
      *
-     * @return {@link Request} 实例。
+     * @return {@link Request} 实例
      */
     default Request getRequestAnnotation() {
         return null;
@@ -110,7 +110,7 @@ public interface HttpClientMetadata {
     }
 
     /**
-     * 获得请求方法上附带的参数
+     * 获得请求方法上附带的参数。
      *
      * @return 参数实例数组
      */

@@ -8,7 +8,7 @@ import com.mara.zoic.annohttp.http.exception.UnexpectedResponseException;
 import com.mara.zoic.annohttp.http.proxy.RequestProxy;
 import com.mara.zoic.annohttp.http.request.converter.RequestBodyConverter;
 import com.mara.zoic.annohttp.http.response.converter.ResponseBodyConverter;
-
+import com.mara.zoic.annohttp.http.response.converter.ResponseConverter;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  * <p>如果你的请求方法期望的是通过异步的手段请求，亦或是在请求前需要设定动态计算的参数，又或者是你想要得到方便转换的的响应对象，那么你可以将此作为请求方法的返回类型。
  * <p>{@link PreparingRequest} 的泛型参数T需要指定你期望的返回结果，它可以是 {@link String}、{@link Map}、{@link ClassicHttpResponse}、{@link InputStream}、Java Bean
  * 甚至是任何类型，annohttp将使用内置的转换器（{@link ResponseBodyConverter}）尝试将其转换。当然，你也可以自定义你的转换器。如果需要定义你的转换器，
- * 实现 {@link ResponseBodyConverter} 并将其使用 {@link AnnoHttpClients#registerResponseBodyConverter(AbstractResponseBodyConverter[])} 注册。注册后当符合条件时将优先使用
+ * 实现 {@link ResponseConverter} 并将其使用 {@link AnnoHttpClients#registerResponseConverter(ResponseConverter...)} 注册。注册后当符合条件时将优先使用
  * 用户自定义的转换器。
  * <p>此类中的大部分方法（{@link #request()}、{@link #requestOperable()}）都是针对<b>响应体（Response Body）的，因此如果需要处理响应体之外的内容（如状态行、响应头）等请使用
  * {@link #requestClassically()}得到 {@link ClassicHttpResponse} 对象然后自行获得。或者直接设定 Header[] 、{@link org.apache.hc.core5.http.message.StatusLine} 作为返回值。</b></p>
@@ -49,9 +49,9 @@ public sealed interface PreparingRequest<T> permits PreparingRequestImpl {
     String MAP_KEY_VALUE = "value";
     String MAP_KEY_COVERABLE = "coverable";
 
-    public static final String DEFAULT_BYTES_FIELD_NAME = "Bytes";
-    public static final String DEFAULT_STRING_FIELD_NAME = "String";
-    public static final String DEFAULT_OBJECT_FIELD_NAME = "Object";
+    String DEFAULT_BYTES_FIELD_NAME = "Bytes";
+    String DEFAULT_STRING_FIELD_NAME = "String";
+    String DEFAULT_OBJECT_FIELD_NAME = "Object";
 
     /**
      * 自定义HttpClient相关的配置。需要用户自己提供一个HttpClientBuilder实例。在配置完成后将以用户提供的建造者生产新HttpClient发起请求。</p>

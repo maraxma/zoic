@@ -17,3 +17,6 @@ target/
 
 ### VS Code ###
 /.vscode/
+
+### Others ###
+/logs/

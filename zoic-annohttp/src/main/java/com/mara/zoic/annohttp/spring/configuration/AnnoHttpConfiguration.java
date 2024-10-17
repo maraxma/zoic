@@ -84,4 +84,9 @@ public class AnnoHttpConfiguration {
         }
         return clientBuilder;
     }
+    
+    @Bean
+    public AnnoHttpLifecycleBeanPostProcessor annoHttpLifecycleBeanPostProcessor() {
+    	return new AnnoHttpLifecycleBeanPostProcessor();
+    }
 }

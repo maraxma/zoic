@@ -29,4 +29,8 @@ public class SpelUtils {
             throw new IllegalArgumentException("Illegal SpEL expression: " + spel, e);
         }
     }
+
+    public static <T> T executeSpel(String spel, Object[] args, Class<T> clazz) {
+        return executeSpel(spel, prepareSpelContext(args), clazz);
+    }
 }

@@ -15,7 +15,7 @@ public class ResponseConverterCache {
 
     static final Map<Class<? extends ResponseConverter>, ResponseConverter> DEFAULT_REG_MAP;
 
-    public static final ResponseConverter AUTO_RESPONSE_BODY_CONVERTER = new AutoResponseConverter();
+    public static final ResponseConverter AUTO_RESPONSE_CONVERTER = new AutoResponseConverter();
 
     static {
         LinkedHashMap<Class<? extends ResponseConverter>, ResponseConverter> map = new LinkedHashMap<>();
