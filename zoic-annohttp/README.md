@@ -347,31 +347,31 @@ interface Client {
 }
 class LifecycleDemo implements AnnoHttpLifecycle {
 
-	@Override
-	public void beforeClientCreating(Class<?> clientClass) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void beforeClientCreating(Class<?> clientClass) {
+        // TODO Auto-generated method stub
+        
+    }
 
-	@Override
-	public void afterClientCreated(Object client) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void afterClientCreated(Object client) {
+        // TODO Auto-generated method stub
+        
+    }
 
-	@Override
-	public void beforeClientRequesting(HttpClientMetadata httpClientMetadata, PreparingRequest<?> preparingRequest) {
-		if (httpClientMetadata.getServiceClientClass() == Client.class) {
-			preparingRequest.customRequestHeaders(t -> t.add(new CoverableNameValuePair("X-Lifecycle", "Added")));
-		}
-	}
+    @Override
+    public void beforeClientRequesting(HttpClientMetadata httpClientMetadata, PreparingRequest<?> preparingRequest) {
+        if (httpClientMetadata.getServiceClientClass() == Client.class) {
+            preparingRequest.customRequestHeaders(t -> t.add(new CoverableNameValuePair("X-Lifecycle", "Added")));
+        }
+    }
 
-	@Override
-	public void afterClientRequested(HttpClientMetadata httpClientMetadata, HttpResponse httpResponse,
-			ResponseConverter responseConverter) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void afterClientRequested(HttpClientMetadata httpClientMetadata, HttpResponse httpResponse,
+            ResponseConverter responseConverter) {
+        // TODO Auto-generated method stub
+        
+    }
 }
 // 生成客户端
 Client c = AnnoHttpClients.create(Client.class, "http://localhost:8081/");
@@ -386,7 +386,7 @@ c.XXX();
 ```java
 @Bean
 public static AnnoHttpLifecycle annoHttpLifecycle() {
-	return new MyLifecycle();
+    return new MyLifecycle();
 }
 ```
 
