@@ -15,11 +15,11 @@ import java.util.function.Function;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface AnnoHttpService {
-    String baseUrl() default "";
+    String baseUri() default "";
 
-    Class <? extends Function<HttpClientMetadata, String>> baseUrlFunctionClass() default EmptyBaseUrlFunction.class;
+    Class <? extends Function<HttpClientMetadata, String>> baseUriFunctionClass() default EmptyBaseUriFunction.class;
 
-    class EmptyBaseUrlFunction implements Function<HttpClientMetadata, String> {
+    class EmptyBaseUriFunction implements Function<HttpClientMetadata, String> {
 
         @Override
         public String apply(HttpClientMetadata annoHttpClientMetadata) {

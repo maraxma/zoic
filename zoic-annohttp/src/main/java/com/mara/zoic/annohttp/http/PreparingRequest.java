@@ -99,10 +99,10 @@ public sealed interface PreparingRequest<T> permits PreparingRequestImpl {
     /**
      * 自定义请求地址。
      *
-     * @param urlMapping URL映射函数，提供原有的URL，返回你需要定制的URL
+     * @param uriMapping URI映射函数，提供原有的URI，返回你需要定制的URI
      * @return {@link PreparingRequest} 本身
      */
-    PreparingRequest<T> customRequestUrl(Function<String, String> urlMapping);
+    PreparingRequest<T> customRequestUri(Function<String, String> uriMapping);
 
     /**
      * 自定义请求代理。

@@ -40,19 +40,19 @@ public class AnnoHttpServiceBeanFactoryProcessor implements BeanFactoryPostProce
                     AnnoHttpService annoHttpServiceAnno = clazz.getAnnotation(AnnoHttpService.class);
                     Object httpService;
                     if (annoHttpServiceAnno != null) {
-                        Class<? extends Function<HttpClientMetadata, String>> baseUrlFunctionClass = annoHttpServiceAnno.baseUrlFunctionClass();
-                        if (baseUrlFunctionClass != AnnoHttpService.EmptyBaseUrlFunction.class) {
-                            Function<HttpClientMetadata, String> baseUrlFunction;
+                        Class<? extends Function<HttpClientMetadata, String>> baseUriFunctionClass = annoHttpServiceAnno.baseUriFunctionClass();
+                        if (baseUriFunctionClass != AnnoHttpService.EmptyBaseUriFunction.class) {
+                            Function<HttpClientMetadata, String> baseUriFunction;
                             try {
-                                baseUrlFunction = baseUrlFunctionClass.getDeclaredConstructor(new Class[]{}).newInstance();
-                                httpService = AnnoHttpClients.create(clazz, baseUrlFunction);
+                                baseUriFunction = baseUriFunctionClass.getDeclaredConstructor(new Class[]{}).newInstance();
+                                httpService = AnnoHttpClients.create(clazz, baseUriFunction);
                             } catch (Exception e) {
                                 throw e;
                             }
                         } else {
-                            String baseUrl = annoHttpServiceAnno.baseUrl();
-                            if (!"".equals(baseUrl)) {
-                                httpService = AnnoHttpClients.create(clazz, baseUrl);
+                            String baseUri = annoHttpServiceAnno.baseUri();
+                            if (!"".equals(baseUri)) {
+                                httpService = AnnoHttpClients.create(clazz, baseUri);
                             } else {
                                 httpService = AnnoHttpClients.create(clazz);
                             }

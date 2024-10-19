@@ -8,7 +8,7 @@ annohttp有如下的特性：
 - 支持自定义协议
 - 支持针对单个请求的代理设定
 - 支持自定义转换器
-- 支持静态和动态baseUrl
+- 支持静态和动态baseUri
 - 支持异步请求
 - 支持快速响应转换
 - 支持SPEL
@@ -24,7 +24,7 @@ annohttp有如下的特性：
 ```java
 // ItemService.java
 public interface ItemService {
-    @Request(url = "http://yourhost:8080/item/get/{id}")
+    @Request(uri = "http://yourhost:8080/item/get/{id}")
     ItemInfo getItemInfo(@PathVar("id") String id, @Headers Map<String, String> headers);
 }
 
@@ -47,7 +47,7 @@ public class Application {
 ```java
 // ItemService.java
 public interface ItemService {
-    @Request(url = "http://yourhost:8080/item/get/{id}")
+    @Request(uri = "http://yourhost:8080/item/get/{id}")
     PreparingRequest<ItemInfo> getItemInfo(@PathVar("id") String id, @Headers Map<String, String> headers);
 }
 
@@ -82,7 +82,7 @@ public class Application {
 ```java
 // ItemService.java
 public interface ItemService {
-    @Request(url = "http://yourhost:8080/item/get/{id}")
+    @Request(uri = "http://yourhost:8080/item/get/{id}")
     InputStream getItemInfo(@PathVar("id") String id, @Headers Map<String, String> headers);
 }
 ```
@@ -130,12 +130,12 @@ import proxy.http.com.mara.annohttp.RequestProxy;
 
 public interface ItemService {
     // 以注解方式添加代理（SPEL）
-    @Request(url = "http://yourhost:8080/item/get/{id}", proxy = "T(com.mara.zoic.annohttp.RequestProxy).create('localhost', 8090, T(com.mara.zoic.annohttp.RequestProxy.ProxyType).HTTP, false, T(com.mara.zoic.annohttp" +
+    @Request(uri = "http://yourhost:8080/item/get/{id}", proxy = "T(com.mara.zoic.annohttp.RequestProxy).create('localhost', 8090, T(com.mara.zoic.annohttp.RequestProxy.ProxyType).HTTP, false, T(com.mara.zoic.annohttp" +
             "com.mara.zoic.annohttp.http.proxy.RequestProxy.ProxyCredentialType).NONE, null, null, null, null)")
     ItemInfo getItemInfo(@PathVar("id") String id, @Headers Map<String, String> headers);
 
     // 以参数方式添加代理
-    @Request(url = "http://yourhost:8080/item/get/{id}")
+    @Request(uri = "http://yourhost:8080/item/get/{id}")
     ItemInfo getItemInfoWithProxy(@PathVar("id") String id, @Headers Map<String, String> headers, @Proxy RequestProxy RequestProxy);
 }
 ```
@@ -188,41 +188,41 @@ Requst.successCondition接受一个字符串，该字符串必须是SPEL并返�
 // 
 public interface ItemService {
     // 以注解方式添加代理（SPEL）
-    @Request(url = "http://yourhost:8080/item/get/{id}", successCondition = "#httpResponse.statusLine.statusCode==201",
+    @Request(uri = "http://yourhost:8080/item/get/{id}", successCondition = "#httpResponse.statusLine.statusCode==201",
     bodySpel = "Map.of(\"name\": \"mara\")")
     ItemInfo getItemInfo(@PathVar("id") String id, @Headers Map<String, String> headers);
 }
 ```
 
-## BaseURL支持
+## BaseURI支持
 
-annohttp还支持BaseURL。BaseURL是基础URL，和@Request.url拼凑成完全的URL。这适用于请求在同一域名下各种子地址。
+annohttp还支持BaseURI。BaseURI是基础URI，和@Request.uri拼凑成完全的URI。这适用于请求在同一域名下各种子地址。
 
-annohttp对于BaseURL有两种支持方式：
+annohttp对于BaseURI有两种支持方式：
 
-- 固定的BaseURL：提供一个固定的URL供使用
+- 固定的BaseURI：提供一个固定的URI供使用
 
 ```java
 // 硬编码方式
 ItemService itemService = AnnoHttpClients.create(ItemService.class, "http://localhost:8080");
 // Spring环境注解方式
 // ItemService.java
-@AnooHttpService(baseUrl = "http://localhost:8080")
+@AnooHttpService(baseUri = "http://localhost:8080")
 public interface ItemService {}
 ```
 
-- 动态的BaseURL，适合于动态获取BaseURL
+- 动态的BaseURI，适合于动态获取BaseURI
 ```java
 // 硬编码方式
 ItemService itemService = AnnoHttpClients.create(ItemService.class, metadata -> metadata.getRequestAnnotation().method() == HttpMethod.GET ? "http://localhost:8081" : "http://localhost:9091");
 // Spring环境注解方式
-@AnnoHttpService(baseUrlFunctionClass = MyBaseUrlFunction.class)
+@AnnoHttpService(baseUriFunctionClass = MyBaseUriFunction.class)
 public interface ItemService2 {}
 ```
 
-由于@Request.url默认是空字符串，因此，配合动态BaseURL，你可以轻松地实现动态的URL，这非常适用于远程获取URL或者从数据库获取URL的场景。
+由于@Request.uri默认是空字符串，因此，配合动态BaseURI，你可以轻松地实现动态的URI，这非常适用于远程获取URI或者从数据库获取URI的场景。
 ```java
-ItemService itemService = AnnoHttpClients.create(ItemService.class, metadata -> remoteService.getItemSerivceUrl());
+ItemService itemService = AnnoHttpClients.create(ItemService.class, metadata -> remoteService.getItemSerivceUri());
 ```
 
 这个特性有点类似于下文的“自定义协议"，只不过它们的实现方式不同，用途也稍微有点区别。
@@ -232,7 +232,7 @@ ItemService itemService = AnnoHttpClients.create(ItemService.class, metadata -> 
 你可以使用自定义协议来定义你的URI，比如请求“myhttp://xxx”。当annohttp遇到这类协议的时候，
 将会寻找合适的 ProtocolHandler 来处理。 本质上自定义的协议将会回归到HTTP请求中来。
 
-自定义协议适用于需要配合其他中间件的需求，如你的url需要从远端获取，然后根据这个地址来请求数据，亦或是你们有特殊的业务场景，需要在请求前做一些特定的操作。有了自定义协议这项功能，你甚至可以改变你的url结构，使其变得更为优雅。
+自定义协议适用于需要配合其他中间件的需求，如你的uri需要从远端获取，然后根据这个地址来请求数据，亦或是你们有特殊的业务场景，需要在请求前做一些特定的操作。有了自定义协议这项功能，你甚至可以改变你的uri结构，使其变得更为优雅。
 
 举例，新建一个协议，此协议名称是“iteminfo”，路径格式是“iteminfo://{serviceName}/{itemNumber}”。按照此协议具体的请求地址可以是“iteminfo://inventory/1001”，代表查询 ItemNumber 为 1001 的商品的库存。
 
@@ -258,11 +258,11 @@ public class MyHttpProtocolHandler implements ProtocolHandler {
 
     @Override
     public void handle(AnnoHttpClientMetadata metadata, PreparingRequest<?> preparingRequest) {
-        preparingRequest.customRequestUrl(oldUrl -> {
-            String serviceName = oldUrl.replace("myhttp").split(":");
-            String serviceUrl = serviceReg.getServiceUrl(serviceName);
+        preparingRequest.customRequestUri(oldUri -> {
+            String serviceName = oldUri.replace("myhttp").split(":");
+            String serviceUri = serviceReg.getServiceUri(serviceName);
             String itemNumber = (String) metadata.getRequestMethodArguments()[0];
-            return new URIBuilder(serviceUrl).addParameter("itemNumber", itemNumber).toString();
+            return new URIBuilder(serviceUri).addParameter("itemNumber", itemNumber).toString();
         });
     }
 }
@@ -270,7 +270,7 @@ public class MyHttpProtocolHandler implements ProtocolHandler {
 // ItemService.java
 public interface ItemService {
 
-    @Request(url = "myhttp://service:item:{itemNumber}")
+    @Request(uri = "myhttp://service:item:{itemNumber}")
     BigDecimal getPrice(@PathVar("itemNumber") String itemNumber);
 }
 
@@ -317,7 +317,7 @@ annohttp使用Apache HttpClient作为HTTP客户端，这点是无法更改的，
 // ItemService.java
 public interface ItemService {
     // 需要以 PreparingRequest 的形式返回，以支持自定义HTTPClient
-    @Request(url = "http://yourhost:8080/item/get/{id}")
+    @Request(uri = "http://yourhost:8080/item/get/{id}")
     PreparingRequest<ItemInfo> getItemInfo(@PathVar("id") String id, @Headers Map<String, String> headers);
 }
 
@@ -342,8 +342,8 @@ AnnoHttpLifecycle 接口实例按照被添加的顺序依次被调用。
 
 ```java
 interface Client {
-            @Request(url = "/testXXX", successCondition = "true")
-            org.apache.hc.core5.http.Header[] baseRequest(@Url String url, @Method HttpMethod method, @Body Map<String, Object> body);
+            @Request(uri = "/testXXX", successCondition = "true")
+            org.apache.hc.core5.http.Header[] baseRequest(@Uri String uri, @Method HttpMethod method, @Body Map<String, Object> body);
 }
 class LifecycleDemo implements AnnoHttpLifecycle {
 
@@ -392,6 +392,20 @@ public static AnnoHttpLifecycle annoHttpLifecycle() {
 
 另一种在 Spring 环境中注册的方式是在使用Spring的声明周期接口如 ApplicationRunner 在合适的时机使用 AnnoHttpClients.addAnnoHttpLifecycleInstances() 方法来注册。
 
+## 一些特殊的请求方法参数类型
+
+某些特殊的请求方法参数类型会被直接识别为特殊用途的数据，即使不附加@Headers、@Method等标识。此特性用于省去一些标注代码。
+
+如果既出现了@Uri、@Headers、@Method、@Body，又出现了如下的特殊参数类型，则优先使用注解方式，并且在遇到一些相冲突的声明时（如既有@Body又有HttpEntity）会被忽略或者抛出异常。
+
+| 类型                                     | 对应的标识符   | 含义         |
+|----------------------------------------|----------|------------|
+| java.net.URI                           | @Uri     | 代表一个URI    |
+| Header                                 | @Header  | 代表一个请求头信息  |
+| Header[]                               | @Headers | 代表一组请求头信息  |
+| com.mara.zoic.annohttp.http.HttpMethod | @Method  | 代表一个HTTP方法 |
+| HttpEntity                             | @Body    | 代表一个请求体    |
+
 ## 请求方法返回参数一览表
 
 该表描述了annohttp目前所支持的请求方法返回参数类型。
@@ -405,10 +419,10 @@ public static AnnoHttpLifecycle annoHttpLifecycle() {
 ```java
 public interface ItemService {
     // 以注解方式添加代理（SPEL）
-    @Request(url = "http://yourhost:8080/item/get/{id}")
+    @Request(uri = "http://yourhost:8080/item/get/{id}")
     _返回类型_ getItemInfo(@PathVar("id") String id, @Headers Map<String, String> headers);
 
-    @Request(url = "http://yourhost:8080/item/get/{id}")
+    @Request(uri = "http://yourhost:8080/item/get/{id}")
     PreparingRequest<_返回类型_> getItemInfo(@PathVar("id") String id, @Headers Map<String, String> headers);
 }
 ```

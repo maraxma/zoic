@@ -8,13 +8,13 @@ import org.apache.hc.core5.http.Header;
 
 import java.util.function.Function;
 
-@AnnoHttpService(baseUrlFunctionClass = TestClientWithBaseUrlFunction.MyBaseUrlFunction.class)
-public interface TestClientWithBaseUrlFunction {
+@AnnoHttpService(baseUriFunctionClass = TestClientWithBaseUriFunction.MyBaseUriFunction.class)
+public interface TestClientWithBaseUriFunction {
 
-    @Request(url = "/test")
+    @Request(uri = "/test")
     Header[] getItemName(@Query("ItemNo") String itemNo);
 
-    class MyBaseUrlFunction implements Function<HttpClientMetadata, String> {
+    class MyBaseUriFunction implements Function<HttpClientMetadata, String> {
         @Override
         public String apply(HttpClientMetadata metadata) {
             String arg0 = (String) metadata.getRequestMethodArguments()[0];

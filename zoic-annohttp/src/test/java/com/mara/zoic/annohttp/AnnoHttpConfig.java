@@ -8,7 +8,7 @@ import com.mara.zoic.annohttp.http.CoverableNameValuePair;
 import com.mara.zoic.annohttp.http.HttpClientMetadata;
 import com.mara.zoic.annohttp.http.PreparingRequest;
 import com.mara.zoic.annohttp.http.response.converter.ResponseConverter;
-import com.mara.zoic.annohttp.httpservice.TestClientWithBaseUrlFunction;
+import com.mara.zoic.annohttp.httpservice.TestClientWithBaseUriFunction;
 import com.mara.zoic.annohttp.lifecycle.AnnoHttpLifecycle;
 
 @Configuration
@@ -35,7 +35,7 @@ public class AnnoHttpConfig {
 		@Override
 		public void beforeClientRequesting(HttpClientMetadata httpClientMetadata,
 				PreparingRequest<?> preparingRequest) {
-			if (TestClientWithBaseUrlFunction.class == httpClientMetadata.getServiceClientClass()) {
+			if (TestClientWithBaseUriFunction.class == httpClientMetadata.getServiceClientClass()) {
 				preparingRequest.customRequestHeaders(e -> e.add(new CoverableNameValuePair("X-Lifecycle-Spring", "Added")));
 			}
 		}

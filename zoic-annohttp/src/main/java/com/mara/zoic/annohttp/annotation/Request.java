@@ -52,12 +52,12 @@ public @interface Request {
     /**
      * 指定目标地址。
      */
-    String url() default "";
+    String uri() default "";
 
     /**
      * 指定目标地址，使用 SpEl 。 SpEl 必须返回一个字符串。
      */
-    String urlSpel() default "";
+    String uriSpel() default "";
 
     /**
      * 指定请求方法。

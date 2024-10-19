@@ -1,68 +1,7 @@
 package com.mara.zoic.annohttp.http;
 
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import org.apache.hc.client5.http.classic.methods.HttpDelete;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.classic.methods.HttpHead;
-import org.apache.hc.client5.http.classic.methods.HttpOptions;
-import org.apache.hc.client5.http.classic.methods.HttpPatch;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.classic.methods.HttpPut;
-import org.apache.hc.client5.http.classic.methods.HttpTrace;
-import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
-import org.apache.hc.client5.http.config.RequestConfig;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.HttpHeaders;
-import org.apache.hc.core5.http.HttpResponse;
-import org.apache.hc.core5.http.NameValuePair;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.message.BasicHeader;
-import org.apache.hc.core5.http.message.BasicNameValuePair;
-import org.apache.hc.core5.net.URIBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.expression.EvaluationContext;
-
-import com.mara.zoic.annohttp.annotation.AnnoHttpService;
-import com.mara.zoic.annohttp.annotation.Body;
-import com.mara.zoic.annohttp.annotation.FormField;
-import com.mara.zoic.annohttp.annotation.FormFields;
-import com.mara.zoic.annohttp.annotation.Headers;
-import com.mara.zoic.annohttp.annotation.PathVar;
-import com.mara.zoic.annohttp.annotation.PathVars;
-import com.mara.zoic.annohttp.annotation.Proxy;
-import com.mara.zoic.annohttp.annotation.Queries;
-import com.mara.zoic.annohttp.annotation.Query;
-import com.mara.zoic.annohttp.annotation.Request;
-import com.mara.zoic.annohttp.annotation.Url;
+import com.mara.zoic.annohttp.annotation.*;
 import com.mara.zoic.annohttp.http.exception.NoApplicableResponseBodyConverterException;
 import com.mara.zoic.annohttp.http.exception.RequestFailedException;
 import com.mara.zoic.annohttp.http.exception.UnexpectedResponseException;
@@ -80,6 +19,37 @@ import com.mara.zoic.annohttp.http.spel.SpelUtils;
 import com.mara.zoic.annohttp.http.visitor.ResponseVisitor;
 import com.mara.zoic.annohttp.lifecycle.AnnoHttpLifecycle;
 import com.mara.zoic.annohttp.testsup.PreparingRequestContainer;
+import org.apache.hc.client5.http.classic.methods.*;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.message.BasicHeader;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.net.URIBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.expression.EvaluationContext;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
 
@@ -105,14 +75,14 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
 
     protected Request requestAnno;
 
-    protected String baseUrl;
-    protected Function<HttpClientMetadata, String> baseUrlProvider;
+    protected String baseUri;
+    protected Function<HttpClientMetadata, String> baseUriProvider;
 
 
 
     protected HttpMethod requestType;
 
-    protected String url;
+    protected String uri;
 
     protected HttpEntity httpEntity;
     protected RequestProxy requestProxy;
@@ -129,13 +99,13 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
     protected volatile CloseableHttpClient httpClient;
     protected static final Object HTTP_CLIENT_LOCK = new Object();
 
-    PreparingRequestImpl(HttpClientMetadata metadata, Method method, Object[] args, String baseUrl, Function<HttpClientMetadata, String> baseUrlProvider) {
+    PreparingRequestImpl(HttpClientMetadata metadata, Method method, Object[] args, String baseUri, Function<HttpClientMetadata, String> baseUriProvider) {
 
         this.metadata = metadata;
         this.method = method;
         this.args = args;
-        this.baseUrl = baseUrl;
-        this.baseUrlProvider = baseUrlProvider;
+        this.baseUri = baseUri;
+        this.baseUriProvider = baseUriProvider;
 
         parameters = method.getParameters();
 
@@ -146,16 +116,16 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
 
         AnnoHttpService annoHttpServiceAnno = method.getDeclaringClass().getAnnotation(AnnoHttpService.class);
         if (annoHttpServiceAnno != null) {
-            if (this.baseUrl == null || this.baseUrl.isBlank()) {
-                this.baseUrl = annoHttpServiceAnno.baseUrl();
+            if (this.baseUri == null || this.baseUri.isBlank()) {
+                this.baseUri = annoHttpServiceAnno.baseUri();
             }
         }
 
         /*       1 处理HttpMethod  */
         processAndGenerateRequestMethod();
 
-        /*       2 处理URL         */
-        processAndGenerateUrl();
+        /*       2 处理URI         */
+        processAndGenerateUri();
 
         /*       3 处理PathVars     */
         processAndGenerateRequestPathVars();
@@ -248,13 +218,25 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
         }
         int bodyFound = 0;
         int bodyIndex = -1;
+        int httpEntityFound = 0;
+        int httpEntityIndex = -1;
         for (int i = 0; i < parameters.length; i++) {
             if (parameters[i].isAnnotationPresent(Body.class)) {
                 bodyFound++;
                 bodyIndex = i;
             }
+            if (HttpEntity.class.isAssignableFrom(parameters[i].getType())) {
+            	httpEntityFound++;
+                httpEntityIndex = i;
+            }
             if (bodyFound > 1) {
-                throw new IllegalArgumentException("You cannot use more than 1 @Body");
+                throw new IllegalArgumentException("You cannot use more than 1 @Body in argument list");
+            }
+            if (httpEntityFound > 1) {
+                throw new IllegalArgumentException("You cannot use more than 1 HttpEntity in argument list");
+            }
+            if (bodyFound + httpEntityFound >= 2) {
+                throw new IllegalArgumentException("You can only use 1 HttpEntity or 1 @Body in argument list");
             }
         }
         Class<?> requestBodyConverterClass = requestAnno.requestBodyConverter();
@@ -262,6 +244,8 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
             // 在参数列表中找到唯一的@Body
             Body bodyAnno = parameters[bodyIndex].getAnnotation(Body.class);
             httpEntity = convertRequestBody(requestBodyConverterClass, args[bodyIndex], computedRequestContentType, metadata, bodyAnno.value());
+        } else if (httpEntityIndex != -1) {
+        	httpEntity = (HttpEntity) args[httpEntityIndex];
         } else {
             // 在参数列表中找不到Body才处理注解上的Body
             // 不要忘了在@Request中也有Body的设定
@@ -330,50 +314,54 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
         }
     }
 
-    private void processAndGenerateUrl() {
-        String computedUrl = requestAnno.url();
-        String urlSpel = requestAnno.urlSpel();
-        if (!"".equals(computedUrl) && !"".equals(urlSpel)) {
-            throw new IllegalArgumentException("Only can set one of @Request.url and @Request.urlSpel");
+    private void processAndGenerateUri() {
+        String computedUri = requestAnno.uri();
+        String uriSpel = requestAnno.uriSpel();
+        if (!"".equals(computedUri) && !"".equals(uriSpel)) {
+            throw new IllegalArgumentException("Only can set one of @Request.url and @Request.uriSpel");
         }
-        if (!"".equals(urlSpel)) {
-            Object res = SpelUtils.executeSpel(urlSpel, evaluationContext, Object.class);
+        if (!"".equals(uriSpel)) {
+            Object res = SpelUtils.executeSpel(uriSpel, evaluationContext, Object.class);
             if (!(res instanceof String)) {
-                throw new IllegalArgumentException("@Request.urlSpel must return a string instance");
+                throw new IllegalArgumentException("@Request.uriSpel must return a string instance");
             }
-            computedUrl = (String) res;
+            computedUri = (String) res;
         }
         for (int i = 0; i < parameters.length; i++) {
             Parameter parameter = parameters[i];
             Class<?> parameterType = parameter.getType();
-            if (parameter.isAnnotationPresent(Url.class)) {
+            if (parameter.isAnnotationPresent(Uri.class)) {
                 if (!String.class.isAssignableFrom(parameterType)) {
-                    throw new IllegalArgumentException("@Url accept String class only");
+                    throw new IllegalArgumentException("@Uri accept String class only");
                 }
-                computedUrl = (String) args[i];
+                computedUri = (String) args[i];
                 break;
+            } else {
+                if (URI.class.isAssignableFrom(parameterType)) {
+                    computedUri = args[i].toString();
+                }
             }
         }
 
-        String finalBaseUrl = baseUrl;
-        if (baseUrlProvider != null) {
-            finalBaseUrl = baseUrlProvider.apply(metadata);
+        String finalBaseUri = baseUri;
+        if (baseUriProvider != null) {
+            finalBaseUri = baseUriProvider.apply(metadata);
         }
-        if (finalBaseUrl != null && !finalBaseUrl.isBlank()) {
-            url = concatUrl(finalBaseUrl, computedUrl);
+        if (finalBaseUri != null && !finalBaseUri.isBlank()) {
+            uri = concatUri(finalBaseUri, computedUri);
             return;
         }
 
-        url = computedUrl;
+        uri = computedUri;
     }
 
-    private static String concatUrl(String baseUrl, String subUrl) {
-        if ((baseUrl.endsWith("/") && !subUrl.startsWith("/")) || (!baseUrl.endsWith("/") && subUrl.startsWith("/"))) {
-            return baseUrl + subUrl;
-        } else if (baseUrl.endsWith("/") && subUrl.startsWith("/")) {
-            return baseUrl.substring(0, baseUrl.length() - 1) + subUrl;
+    private static String concatUri(String baseUri, String subUri) {
+        if ((baseUri.endsWith("/") && !subUri.startsWith("/")) || (!baseUri.endsWith("/") && subUri.startsWith("/"))) {
+            return baseUri + subUri;
+        } else if (baseUri.endsWith("/") && subUri.startsWith("/")) {
+            return baseUri.substring(0, baseUri.length() - 1) + subUri;
         } else {
-            return baseUrl + "/" + subUrl;
+            return baseUri + "/" + subUri;
         }
     }
 
@@ -405,6 +393,16 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
             for (int i = 0; i < parameters.length; i++) {
                 Parameter parameter = parameters[i];
                 Class<?> parameterType = parameter.getType();
+                if (Header.class.isAssignableFrom(parameterType)) {
+                	Header header = (Header) args[i];
+                	addCoverableHeader(headers, new CoverableNameValuePair(header.getName(), header.getValue()));
+                }
+                if (Header[].class.isAssignableFrom(parameterType)) {
+                	Header[] hs = (Header[]) args[i];
+                	for (Header h : hs) {
+                		addCoverableHeader(headers, new CoverableNameValuePair(h.getName(), h.getValue()));
+					}
+                }
                 if (parameter.isAnnotationPresent(com.mara.zoic.annohttp.annotation.Header.class)) {
                     if (!String.class.isAssignableFrom(parameterType)) {
                         throw new IllegalArgumentException("@Header parameter should be type of String");
@@ -418,7 +416,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                     if (annoHeaderName == null || (annoHeaderName = annoHeaderName.trim()).isEmpty()) {
                         throw new IllegalArgumentException("Header name cannot be null or empty: " + parameter.getName());
                     }
-                    addCoverable(headers, new CoverableNameValuePair(annoHeaderName, argHeaderValue));
+                    addCoverableHeader(headers, new CoverableNameValuePair(annoHeaderName, argHeaderValue));
                 }
                 if (parameter.isAnnotationPresent(Headers.class)) {
                     if (!Map.class.isAssignableFrom(parameterType) && !String[].class.isAssignableFrom(parameterType)) {
@@ -427,14 +425,14 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                     if (String[].class.isAssignableFrom(parameterType)) {
                         String[] headerArray = (String[]) args[i];
                         for (String s : headerArray) {
-                            addCoverable(headers, getHeaderFromStringStyled(s, headerCoverable));
+                            addCoverableHeader(headers, getHeaderFromStringStyled(s, headerCoverable));
                         }
                     } else {
                         @SuppressWarnings("unchecked")
                         Map<String, String> headerMap = (Map<String, String>) args[i];
                         headerMap.forEach((k, v) -> {
                             checkHeader(k, v);
-                            addCoverable(headers, new CoverableNameValuePair(k, v, headerCoverable));
+                            addCoverableHeader(headers, new CoverableNameValuePair(k, v, headerCoverable));
                         });
                     }
                 }
@@ -448,7 +446,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                 if (annoHeaders.length != 0) {
                     for (String annoHeader : annoHeaders) {
                         CoverableNameValuePair h = getHeaderFromStringStyled(annoHeader, headerCoverable);
-                        addCoverable(headers, h);
+                        addCoverableHeader(headers, h);
                     }
                 } else {
                     if (!annoSpelHeaders.isBlank()) {
@@ -458,7 +456,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                             Map<String, Object> m = ((Map<String, Object>) spelRes);
                             m.forEach((k, v) -> {
                                 checkHeader(k, v);
-                                addCoverable(headers, new CoverableNameValuePair(k, String.valueOf(v), false));
+                                addCoverableHeader(headers, new CoverableNameValuePair(k, String.valueOf(v), false));
                             });
                         } else if (spelRes instanceof Object[] array) {
                             for (Object o : array) {
@@ -484,7 +482,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                                 if (headerInvalid) {
                                     throw new IllegalArgumentException("Your header on @Request headerSpel is invalid, please check: " + m);
                                 }
-                                addCoverable(headers, new CoverableNameValuePair(headerName, headerValue, coverable));
+                                addCoverableHeader(headers, new CoverableNameValuePair(headerName, headerValue, coverable));
                             }
                         }
                     }
@@ -528,7 +526,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
             }
 
             // 注意优先级，注解指定ContentType的优先级是最低的
-            addCoverable(existingHeaders, new CoverableNameValuePair(HttpHeaders.CONTENT_TYPE, contentType.toString(), requestAnno.headerCoverable()));
+            addCoverableHeader(existingHeaders, new CoverableNameValuePair(HttpHeaders.CONTENT_TYPE, contentType.toString(), requestAnno.headerCoverable()));
         }
     }
 
@@ -560,7 +558,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                     if (qKey == null || qKey.isBlank()) {
                         throw new IllegalArgumentException("Query parameter's key cannot be null or empty");
                     }
-                    addCoverable(queries, new CoverableNameValuePair(qKey, (String) args[i], queryCoverable));
+                    addCoverableHeader(queries, new CoverableNameValuePair(qKey, (String) args[i], queryCoverable));
                 } else if (parameter.isAnnotationPresent(Queries.class)) {
                     if (parameter.isAnnotationPresent(Query.class)) {
                         throw new IllegalArgumentException("You can only use one of @Query & @Queries");
@@ -574,14 +572,14 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                         String queryName = en.getKey();
                         String queryValue = en.getValue();
                         checkQueryParameter(queryName, queryValue);
-                        addCoverable(queries, new CoverableNameValuePair(queryName, queryValue, queryCoverable));
+                        addCoverableHeader(queries, new CoverableNameValuePair(queryName, queryValue, queryCoverable));
                     }
                 }
             }
             // 5.2 处理@Request.queries
             String[] annoQueries = requestAnno.queries();
             for (String q : annoQueries) {
-                addCoverable(queries, getQueryParameterFromStringStyled(q, queryCoverable));
+                addCoverableHeader(queries, getQueryParameterFromStringStyled(q, queryCoverable));
             }
             // 5.3 处理@Request.queriesSpel
             String queriesSpel = requestAnno.queriesSpel();
@@ -594,7 +592,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                         String queryName = entry.getKey();
                         String queryValue = entry.getValue();
                         checkQueryParameter(queryName, queryValue);
-                        addCoverable(queries, new CoverableNameValuePair(queryName, queryValue));
+                        addCoverableHeader(queries, new CoverableNameValuePair(queryName, queryValue));
                     }
                 } else if (res instanceof List) {
                     @SuppressWarnings("unchecked")
@@ -604,7 +602,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                         String queryValue = (String) map.get("value");
                         checkQueryParameter(queryName, queryValue);
                         boolean coverable = Boolean.parseBoolean((String) map.get("coverable"));
-                        addCoverable(queries, new CoverableNameValuePair(queryName, queryValue, coverable));
+                        addCoverableHeader(queries, new CoverableNameValuePair(queryName, queryValue, coverable));
                     }
                 }
             }
@@ -685,7 +683,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
         try {
             httpResponse = executeRequest();
         } catch (Exception e) {
-            throw new RequestFailedException("Request Failed for url " + url, e);
+            throw new RequestFailedException("Request Failed for uri " + uri, e);
         }
 
         // 从这里开始便有了 httpResponse，出现任何异常应当释放 HttpResponse 里面的 Entity 所占用的资源
@@ -761,13 +759,13 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
     }
 
     @Override
-    public PreparingRequest<T> customRequestUrl(Function<String, String> urlMapping) {
-        if (urlMapping != null) {
-            String userUrl = urlMapping.apply(url);
-            if (userUrl == null || userUrl.isBlank()) {
-                throw new IllegalArgumentException("Url cannot be null or empty");
+    public PreparingRequest<T> customRequestUri(Function<String, String> uriMapping) {
+        if (uriMapping != null) {
+            String userUri = uriMapping.apply(uri);
+            if (userUri == null || userUri.isBlank()) {
+                throw new IllegalArgumentException("Uri cannot be null or empty");
             }
-            url = userUrl;
+            uri = userUri;
         }
         return this;
     }
@@ -806,6 +804,12 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                 }
                 requestType = (HttpMethod) args[i];
                 break;
+            } else {
+                // 如果参数类型就是HttpMethod，则可以不用附加@Method注解
+                if (HttpMethod.class.isAssignableFrom(parameterType)) {
+                    requestType = (HttpMethod) args[i];
+                    break;
+                }
             }
         }
     }
@@ -870,53 +874,53 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
      */
     protected HttpUriRequestBase generateRawRequest() {
 
-        String computedUrl = url;
+        String computedUri = uri;
 
         // 处理路径参数，必须完全匹配，要区分大小写
         if (pathVars != null) {
             for (Map.Entry<String, String> en : pathVars.entrySet()) {
-                computedUrl = computedUrl.replace("{" + en.getKey() + "}", en.getValue());
+                computedUri = computedUri.replace("{" + en.getKey() + "}", en.getValue());
             }
         }
 
         // 处理查询参数
-        URI computedUri;
+        URI realUri;
         if (queries != null) {
             List<NameValuePair> params = queries
                     .stream()
                     .map(e -> new BasicNameValuePair(e.getName(), e.getValue()))
                     .collect(Collectors.toList());
             try {
-                computedUri = new URIBuilder(computedUrl).addParameters(params).build();
+                realUri = new URIBuilder(computedUri).addParameters(params).build();
             } catch (URISyntaxException e) {
-                throw new IllegalArgumentException("Cannot attach query parameters: " + queries + " to url " + computedUrl, e);
+                throw new IllegalArgumentException("Cannot attach query parameters: " + queries + " to uri " + computedUri, e);
             }
         } else {
-            computedUri = URI.create(computedUrl);
+            realUri = URI.create(computedUri);
         }
 
-        if (url == null || url.trim().isBlank()) {
-            throw new IllegalArgumentException("Illegal url: " + url);
+        if (uri == null || uri.trim().isBlank()) {
+            throw new IllegalArgumentException("Illegal uri: " + uri);
         }
 
         // 处理Method
         HttpUriRequestBase httpUriRequest;
         if (requestType == HttpMethod.GET) {
-            httpUriRequest = new HttpGet(computedUri);
+            httpUriRequest = new HttpGet(realUri);
         } else if (requestType == HttpMethod.POST) {
-            httpUriRequest = new HttpPost(computedUri);
+            httpUriRequest = new HttpPost(realUri);
         } else if (requestType == HttpMethod.DELETE) {
-            httpUriRequest = new HttpDelete(computedUri);
+            httpUriRequest = new HttpDelete(realUri);
         } else if (requestType == HttpMethod.OPTIONS) {
-            httpUriRequest = new HttpOptions(computedUri);
+            httpUriRequest = new HttpOptions(realUri);
         } else if (requestType == HttpMethod.PUT) {
-            httpUriRequest = new HttpPut(computedUri);
+            httpUriRequest = new HttpPut(realUri);
         } else if (requestType == HttpMethod.TRACE) {
-            httpUriRequest = new HttpTrace(computedUri);
+            httpUriRequest = new HttpTrace(realUri);
         } else if (requestType == HttpMethod.HEAD) {
-            httpUriRequest = new HttpHead(computedUri);
+            httpUriRequest = new HttpHead(realUri);
         } else if (requestType == HttpMethod.PATCH) {
-            httpUriRequest = new HttpPatch(computedUri);
+            httpUriRequest = new HttpPatch(realUri);
         } else {
             throw new IllegalArgumentException("Unsupported request type: " + requestType);
         }
@@ -925,7 +929,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
     }
 
     protected void executeProtocolHandler() {
-        String protocol = url.substring(0, url.indexOf("://")).trim().toLowerCase();
+        String protocol = uri.substring(0, uri.indexOf("://")).trim().toLowerCase();
         ProtocolHandler protocolHandler = ProtocolHandlerMapping.getHandler(protocol);
         protocolHandler.handle(metadata, this);
     }
@@ -1089,7 +1093,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
     	}
     }
 
-    private void addCoverable(List<CoverableNameValuePair> existing, CoverableNameValuePair incoming) {
+    private void addCoverableHeader(List<CoverableNameValuePair> existing, CoverableNameValuePair incoming) {
         if (incoming == null) {
             throw new IllegalArgumentException("Incoming coverable header/query parameter cannot be null");
         }

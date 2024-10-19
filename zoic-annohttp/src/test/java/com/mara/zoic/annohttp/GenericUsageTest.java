@@ -9,13 +9,19 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.ext.web.Router;
 import org.apache.commons.io.IOUtils;
+import org.apache.hc.client5.http.entity.EntityBuilder;
 import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.io.entity.StringEntity;
+import org.apache.hc.core5.http.message.BasicHeader;
 import org.apache.hc.core5.http.message.StatusLine;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.function.Executable;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Stream;
@@ -46,6 +52,7 @@ public class GenericUsageTest {
             var response = rctx.response();
             requestHeaders.forEach(entry -> response.headers().add(entry.getKey(), entry.getValue()));
             response.putHeader("Request-Method", requestMethod.name());
+            response.putHeader("Request-URI", request.absoluteURI());
             requestParam.forEach(entry -> response.putHeader("Request-Param-" + entry.getKey(), entry.getValue()));
             request.body(r -> response.end(r.result()));
         });
@@ -68,7 +75,7 @@ public class GenericUsageTest {
     @DisplayName("普通测试 -- 默认GET方式，默认JSON请求类型，默认UTF-8，返回JSON字符串")
     void baseTest() {
         interface Client {
-            @Request(url = "http://localhost:8081/test")
+            @Request(uri = "http://localhost:8081/test")
             String baseRequest(@Body String jsonBody);
         }
 
@@ -85,12 +92,34 @@ public class GenericUsageTest {
         // 请求体 = 响应体
         Assertions.assertEquals(req, resp);
     }
+    
+    @Test
+    @DisplayName("普通测试 -- POST方式，直接发送HttpEntity")
+    void baseTest_2() {
+        interface Client {
+            @Request(uri = "http://localhost:8081/test")
+            String baseRequest(HttpEntity httpEntity);
+        }
+
+        Client c = AnnoHttpClients.create(Client.class);
+
+        String req =  """
+                {
+                    "Name": "Mara"
+                }
+                """;
+        HttpEntity entity = EntityBuilder.create().setText(req).setContentType(ContentType.APPLICATION_JSON).setContentEncoding("UTF-8").build();
+        String resp = c.baseRequest(entity);
+
+        // 请求体 = 响应体
+        Assertions.assertEquals(req, resp);
+    }
 
     @Test
     @DisplayName("普通测试 -- 默认GET方式，自定义ContentType")
     void baseTest2() {
         interface Client {
-            @Request(url = "http://localhost:8081/test")
+            @Request(uri = "http://localhost:8081/test")
             @ContentTypeTextPlain
             ClassicHttpResponse baseRequest(@Body String jsonBody);
         }
@@ -127,7 +156,7 @@ public class GenericUsageTest {
         }
 
         interface Client {
-            @Request(url = "http://localhost:8081/test")
+            @Request(uri = "http://localhost:8081/test")
             Bean baseRequest(@Body String jsonBody);
         }
 
@@ -153,7 +182,7 @@ public class GenericUsageTest {
         }
 
         interface Client {
-            @Request(url = "http://localhost:8081/test")
+            @Request(uri = "http://localhost:8081/test")
             PreparingRequest<Bean> baseRequest(@Body String jsonBody);
         }
 
@@ -176,7 +205,7 @@ public class GenericUsageTest {
     void baseTest5() {
 
         interface Client {
-            @Request(url = "http://localhost:8081/test")
+            @Request(uri = "http://localhost:8081/test")
             Map<String, Object> baseRequest(@Body String jsonBody);
         }
 
@@ -198,7 +227,7 @@ public class GenericUsageTest {
     void baseTest6() {
 
         interface Client {
-            @Request(url = "http://localhost:8081/test", headers = {"Mara: 1", "Mara: 2"})
+            @Request(uri = "http://localhost:8081/test", headers = {"Mara: 1", "Mara: 2"})
             org.apache.hc.core5.http.Header[] baseRequest(@Body String jsonBody);
         }
 
@@ -222,7 +251,7 @@ public class GenericUsageTest {
     void baseTest7() {
 
         interface Client {
-            @Request(url = "http://localhost:8081/test", headers = {"Mara: 1", "Mara: 2"})
+            @Request(uri = "http://localhost:8081/test", headers = {"Mara: 1", "Mara: 2"})
             org.apache.hc.core5.http.Header[] baseRequest();
         }
 
@@ -240,7 +269,7 @@ public class GenericUsageTest {
     void baseTest8() {
 
         interface Client {
-            @Request(url = "http://localhost:8081/test", successCondition = "true")
+            @Request(uri = "http://localhost:8081/test", successCondition = "true")
             StatusLine baseRequest();
         }
 
@@ -256,7 +285,7 @@ public class GenericUsageTest {
     void baseTest9() {
 
         interface Client {
-            @Request(url = "http://localhost:8081/test", successCondition = "")
+            @Request(uri = "http://localhost:8081/test", successCondition = "")
             PreparingRequest<StatusLine> baseRequest();
             // 不推荐将StatusLine、Header[]等特殊类型放入PreparingRequest，因为PreparingRequest是专门处理响应体的
         }
@@ -277,11 +306,11 @@ public class GenericUsageTest {
     }
 
     @Test
-    @DisplayName("普通测试 -- 默认GET方式，附加baseUrl")
+    @DisplayName("普通测试 -- 默认GET方式，附加baseUri")
     void baseTest10() {
 
         interface Client {
-            @Request(url = "/test", successCondition = "true")
+            @Request(uri = "/test", successCondition = "true")
             StatusLine baseRequest();
         }
 
@@ -305,7 +334,7 @@ public class GenericUsageTest {
     void baseTest11() {
 
         interface Client {
-            @Request(url = "/test", successCondition = "true")
+            @Request(uri = "/test", successCondition = "true")
             org.apache.hc.core5.http.Header[] baseRequest(@Headers Map<String, String> headers);
         }
 
@@ -324,7 +353,7 @@ public class GenericUsageTest {
     void baseTest12() {
 
         interface Client {
-            @Request(url = "/test", successCondition = "true")
+            @Request(uri = "/test", successCondition = "true")
             org.apache.hc.core5.http.Header[] baseRequest(@Headers String[] headers);
         }
 
@@ -343,12 +372,50 @@ public class GenericUsageTest {
     void baseTest13() {
 
         interface Client {
-            @Request(url = "/test", successCondition = "true")
+            @Request(uri = "/test", successCondition = "true")
             org.apache.hc.core5.http.Header[] baseRequest(@Header("Token") String token, @Header("Token2") String token2);
         }
 
         Client c = AnnoHttpClients.create(Client.class, "http://localhost:8081/");
         org.apache.hc.core5.http.Header[] headers = c.baseRequest("Fake token", "Fake token 2");
+
+        HashMap<String, String> headerMap = Arrays.stream(headers)
+                .collect(HashMap::new, (l, r) -> l.put(r.getName(), r.getValue()), HashMap::putAll);
+
+        Assertions.assertEquals("Fake token", headerMap.get("Token"));
+        Assertions.assertEquals("Fake token 2", headerMap.get("Token2"));
+    }
+    
+    @Test
+    @DisplayName("普通测试 -- 默认GET方式，在参数列表中直接使用Header附加请求头")
+    void baseTest13_2() {
+
+        interface Client {
+            @Request(uri = "/test", successCondition = "true")
+            org.apache.hc.core5.http.Header[] baseRequest(org.apache.hc.core5.http.Header header1, org.apache.hc.core5.http.Header header2);
+        }
+
+        Client c = AnnoHttpClients.create(Client.class, "http://localhost:8081/");
+        org.apache.hc.core5.http.Header[] headers = c.baseRequest(new BasicHeader("Token", "Fake token"), new BasicHeader("Token2", "Fake token 2"));
+
+        HashMap<String, String> headerMap = Arrays.stream(headers)
+                .collect(HashMap::new, (l, r) -> l.put(r.getName(), r.getValue()), HashMap::putAll);
+
+        Assertions.assertEquals("Fake token", headerMap.get("Token"));
+        Assertions.assertEquals("Fake token 2", headerMap.get("Token2"));
+    }
+    
+    @Test
+    @DisplayName("普通测试 -- 默认GET方式，在参数列表中直接使用Header[]附加请求头")
+    void baseTest13_3() {
+
+        interface Client {
+            @Request(uri = "/test", successCondition = "true")
+            org.apache.hc.core5.http.Header[] baseRequest(org.apache.hc.core5.http.Header[] headers);
+        }
+
+        Client c = AnnoHttpClients.create(Client.class, "http://localhost:8081/");
+        org.apache.hc.core5.http.Header[] headers = c.baseRequest(new org.apache.hc.core5.http.Header[] {new BasicHeader("Token", "Fake token"), new BasicHeader("Token2", "Fake token 2")});
 
         HashMap<String, String> headerMap = Arrays.stream(headers)
                 .collect(HashMap::new, (l, r) -> l.put(r.getName(), r.getValue()), HashMap::putAll);
@@ -362,7 +429,7 @@ public class GenericUsageTest {
     void baseTest14() {
 
         interface Client {
-            @Request(url = "/test", successCondition = "true")
+            @Request(uri = "/test", successCondition = "true")
             String baseRequest(@FormFields Map<String, String> formFields);
         }
 
@@ -380,10 +447,10 @@ public class GenericUsageTest {
     void baseTest15() {
 
         interface Client {
-            @Request(url = "/test", successCondition = "true")
+            @Request(uri = "/test", successCondition = "true")
             String baseRequest(@FormField("Name") String name, @FormField("Age") String age);
 
-            @Request(url = "/test", successCondition = "true", contentType = "application/x-www-form-urlencoded")
+            @Request(uri = "/test", successCondition = "true", contentType = "application/x-www-form-urlencoded")
             String baseRequest2(@FormField("Name") String name, @FormField("Age") int age);
         }
 
@@ -403,7 +470,7 @@ public class GenericUsageTest {
     void baseTest16() {
 
         interface Client {
-            @Request(url = "/test", successCondition = "true")
+            @Request(uri = "/test", successCondition = "true")
             org.apache.hc.core5.http.Header[] baseRequest(@Queries Map<String, String> queries);
         }
 
@@ -423,7 +490,7 @@ public class GenericUsageTest {
     void baseTest17() {
 
         interface Client {
-            @Request(url = "/test", successCondition = "true")
+            @Request(uri = "/test", successCondition = "true")
             org.apache.hc.core5.http.Header[] baseRequest(@Query("Name") String name, @Query("Age") String age);
         }
 
@@ -439,18 +506,39 @@ public class GenericUsageTest {
     }
 
     @Test
-    @DisplayName("普通测试 -- 默认GET方式，在参数列表中使用@Url指定Url")
+    @DisplayName("普通测试 -- 默认GET方式，在参数列表中使用@Uri指定Uri")
     void baseTest18() {
 
         interface Client {
-            @Request(url = "/testXXX", successCondition = "true")
-            StatusLine baseRequest(@Url String url);
+            @Request(successCondition = "true")
+            org.apache.hc.core5.http.Header[] baseRequest(@Uri String uri);
         }
 
         Client c = AnnoHttpClients.create(Client.class, "http://localhost:8081/");
-        StatusLine statusLine = c.baseRequest("/test");
+        org.apache.hc.core5.http.Header[] headers = c.baseRequest("/test");
+        
+        Optional<org.apache.hc.core5.http.Header> hd = Arrays.stream(headers).filter(h -> h.getName().equals("Request-URI")).findFirst();
 
-        Assertions.assertEquals(200, statusLine.getStatusCode());
+        Assertions.assertTrue(hd.isPresent());
+        Assertions.assertEquals("http://localhost:8081/test", hd.get().getValue());
+    }
+    
+    @Test
+    @DisplayName("普通测试 -- 默认GET方式，在参数列表中直接使用URI")
+    void baseTest18_2() {
+
+    	interface Client {
+            @Request(successCondition = "true")
+            org.apache.hc.core5.http.Header[] baseRequest(URI uri);
+        }
+
+        Client c = AnnoHttpClients.create(Client.class, "http://localhost:8081/");
+        org.apache.hc.core5.http.Header[] headers = c.baseRequest(URI.create("/test"));
+        
+        Optional<org.apache.hc.core5.http.Header> hd = Arrays.stream(headers).filter(h -> h.getName().equals("Request-URI")).findFirst();
+
+        Assertions.assertTrue(hd.isPresent());
+        Assertions.assertEquals("http://localhost:8081/test", hd.get().getValue());
     }
 
     @Test
@@ -458,8 +546,23 @@ public class GenericUsageTest {
     void baseTest19() {
 
         interface Client {
-            @Request(url = "/testXXX", successCondition = "true")
-            org.apache.hc.core5.http.Header[] baseRequest(@Url String url, @Method HttpMethod method);
+            @Request(uri = "/testXXX", successCondition = "true")
+            org.apache.hc.core5.http.Header[] baseRequest(@Uri String uri, @Method HttpMethod method);
+        }
+
+        Client c = AnnoHttpClients.create(Client.class, "http://localhost:8081/");
+        org.apache.hc.core5.http.Header[] headers = c.baseRequest("/test", HttpMethod.POST);
+
+        Assertions.assertEquals("POST", Arrays.stream(headers).filter(e -> "Request-Method".equals(e.getName())).findFirst().map(org.apache.hc.core5.http.Header::getValue).orElse(null));
+    }
+    
+    @Test
+    @DisplayName("普通测试 -- 默认GET方式，在参数列表中直接使用HttpMethod指定Method")
+    void baseTest19_2() {
+
+        interface Client {
+            @Request(uri = "/testXXX", successCondition = "true")
+            org.apache.hc.core5.http.Header[] baseRequest(@Uri String uri, HttpMethod method);
         }
 
         Client c = AnnoHttpClients.create(Client.class, "http://localhost:8081/");
@@ -473,15 +576,15 @@ public class GenericUsageTest {
     void baseTest20() {
 
         interface Client {
-            @Request(url = "/testXXX", successCondition = "true")
-            org.apache.hc.core5.http.Header[] baseRequest(@Url String url, @Method HttpMethod method, @Body Map<String, Object> body1, @Body Map<String, Object> body2);
+            @Request(uri = "/testXXX", successCondition = "true")
+            org.apache.hc.core5.http.Header[] baseRequest(@Uri String uri, @Method HttpMethod method, @Body Map<String, Object> body1, @Body Map<String, Object> body2);
         }
 
         Client c = AnnoHttpClients.create(Client.class, "http://localhost:8081/");
         Executable executable =  () -> c.baseRequest("/test", HttpMethod.POST, Map.of(), Map.of());
 
         IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, executable);
-        Assertions.assertTrue(e.getMessage() != null && e.getMessage().contains("You cannot use more than 1 @Body"));
+        Assertions.assertEquals("You cannot use more than 1 @Body in argument list", e.getMessage());
     }
 
     @Test
@@ -489,16 +592,16 @@ public class GenericUsageTest {
     void baseTest21() {
 
         interface Client {
-            @Request(url = "/testXXX", successCondition = "true")
-            void baseRequest(@Url String url, @Method HttpMethod method, @Body Map<String, Object> body);
+            @Request(uri = "/testXXX", successCondition = "true")
+            void baseRequest(@Uri String uri, @Method HttpMethod method, @Body Map<String, Object> body);
         }
 
         Client c = AnnoHttpClients.create(Client.class, "http://localhost:8081/");
         c.baseRequest("/test", HttpMethod.POST, Map.of());
 
         interface Client2 {
-            @Request(url = "/testXXX", successCondition = "true")
-            PreparingRequest<Void> baseRequest(@Url String url, @Method HttpMethod method, @Body Map<String, Object> body);
+            @Request(uri = "/testXXX", successCondition = "true")
+            PreparingRequest<Void> baseRequest(@Uri String uri, @Method HttpMethod method, @Body Map<String, Object> body);
         }
         Client2 c2 = AnnoHttpClients.create(Client2.class, "http://localhost:8081/");
         PreparingRequest<Void> pr2 = c2.baseRequest("/test", HttpMethod.POST, Map.of());
@@ -509,8 +612,8 @@ public class GenericUsageTest {
     @DisplayName("普通测试 -- 默认GET方式，使用生命周期接口")
     void baseTest22() {
     	interface Client {
-            @Request(url = "/testXXX", successCondition = "true")
-            org.apache.hc.core5.http.Header[] baseRequest(@Url String url, @Method HttpMethod method, @Body Map<String, Object> body);
+            @Request(uri = "/testXXX", successCondition = "true")
+            org.apache.hc.core5.http.Header[] baseRequest(@Uri String uri, @Method HttpMethod method, @Body Map<String, Object> body);
         }
     	class LifecycleDemo implements AnnoHttpLifecycle {
 

@@ -1,7 +1,7 @@
 package com.mara.zoic.annohttp;
 
 import com.mara.zoic.annohttp.httpservice.TestClient;
-import com.mara.zoic.annohttp.httpservice.TestClientWithBaseUrlFunction;
+import com.mara.zoic.annohttp.httpservice.TestClientWithBaseUriFunction;
 import com.mara.zoic.annohttp.httpservice.TestClientWithoutAnno;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
@@ -27,7 +27,7 @@ public class CombineWithSpringTest {
     private TestClientWithoutAnno testClientWithoutAnno;
 
     @Autowired(required = false)
-    private TestClientWithBaseUrlFunction testClientWithBaseUrlFunction;
+    private TestClientWithBaseUriFunction testClientWithBaseUriFunction;
 
     static HttpServer httpServer;
     static HttpServer httpServer2;
@@ -82,8 +82,8 @@ public class CombineWithSpringTest {
     }
 
     @Test
-    void testBaseUrl() {
-    	Header[] headers = testClientWithBaseUrlFunction.getItemName("123");
+    void testBaseUri() {
+    	Header[] headers = testClientWithBaseUriFunction.getItemName("123");
         String requestUri = Arrays.stream(headers).filter(h -> h.getName().equals("Request-URI")).map(Header::getValue).findFirst().orElseGet(() -> null);
         Assertions.assertNotNull(requestUri);
         Assertions.assertEquals("http://localhost:8081/test?ItemNo=123", requestUri);
@@ -91,19 +91,19 @@ public class CombineWithSpringTest {
     
     @Test
     void testLifecycle() {
-    	Header[] headers = testClientWithBaseUrlFunction.getItemName("123");
+    	Header[] headers = testClientWithBaseUriFunction.getItemName("123");
         String hd = Arrays.stream(headers).filter(h -> h.getName().equals("X-Lifecycle-Spring")).map(Header::getValue).findFirst().orElseGet(() -> null);
         Assertions.assertNotNull(hd);
         Assertions.assertEquals("Added", hd);
     }
 
-    void testBaseUrlFunction() {
-        Header[] headers = testClientWithBaseUrlFunction.getItemName("123");
+    void testBaseUriFunction() {
+        Header[] headers = testClientWithBaseUriFunction.getItemName("123");
         String requestUri = Arrays.stream(headers).filter(h -> h.getName().equals("Request-URI")).map(Header::getValue).findFirst().orElseGet(() -> null);
         Assertions.assertNotNull(requestUri);
         Assertions.assertEquals("http://localhost:8081/test?ItemNo=123", requestUri);
 
-        Header[] headers2 = testClientWithBaseUrlFunction.getItemName("Special");
+        Header[] headers2 = testClientWithBaseUriFunction.getItemName("Special");
         String requestUri2 = Arrays.stream(headers2).filter(h -> h.getName().equals("Request-URI")).map(Header::getValue).findFirst().orElseGet(() -> null);
         Assertions.assertNotNull(requestUri2);
         Assertions.assertEquals("http://localhost:9081/test?ItemNo=Special", requestUri2);

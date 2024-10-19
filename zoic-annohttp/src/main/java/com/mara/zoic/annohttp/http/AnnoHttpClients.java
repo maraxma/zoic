@@ -50,15 +50,15 @@ public final class AnnoHttpClients {
      *
      * @param <T>           实例接口类型
      * @param annoHttpClass 请求接口类
-     * @param baseUrl       基础URL，可以是null，null代表不附加baseUrl
+     * @param baseUri       基础URI，可以是null，null代表不附加baseUri
      * @return 接口实例
      */
     @SuppressWarnings("unchecked")
-    public static <T> T create(Class<T> annoHttpClass, String baseUrl) {
+    public static <T> T create(Class<T> annoHttpClass, String baseUri) {
     	executeLifecycleBeforeCreatingMethod(annoHttpClass);
         // 动态代理
         // 都是基于接口的，因此使用JDK自带的动态代理即可
-        T client = (T) Proxy.newProxyInstance(annoHttpClass.getClassLoader(), new Class<?>[]{annoHttpClass}, InvocationHandlerHolder.getOrCreateAnnoHttpClientInvocationHandler(baseUrl));
+        T client = (T) Proxy.newProxyInstance(annoHttpClass.getClassLoader(), new Class<?>[]{annoHttpClass}, InvocationHandlerHolder.getOrCreateAnnoHttpClientInvocationHandler(baseUri));
         executeLifecycleAfterCreatedMethod(client);
         return client;
     }
@@ -68,15 +68,15 @@ public final class AnnoHttpClients {
      *
      * @param <T>           实例接口类型
      * @param annoHttpClass 请求接口类
-     * @param baseUrlProvider 基础URL提供器，可以是null，null代表不附加baseUrl
+     * @param baseUriProvider 基础URI提供器，可以是null，null代表不附加baseUri
      * @return 接口实例
      */
     @SuppressWarnings("unchecked")
-    public static <T> T create(Class<T> annoHttpClass, Function<HttpClientMetadata, String> baseUrlProvider) {
+    public static <T> T create(Class<T> annoHttpClass, Function<HttpClientMetadata, String> baseUriProvider) {
     	executeLifecycleBeforeCreatingMethod(annoHttpClass);
         // 动态代理
         // 都是基于接口的，因此使用JDK自带的动态代理即可
-        T client = (T) Proxy.newProxyInstance(annoHttpClass.getClassLoader(), new Class<?>[]{annoHttpClass}, new AnnoHttpClientInvocationHandler(baseUrlProvider));
+        T client = (T) Proxy.newProxyInstance(annoHttpClass.getClassLoader(), new Class<?>[]{annoHttpClass}, new AnnoHttpClientInvocationHandler(baseUriProvider));
         executeLifecycleAfterCreatedMethod(client);
         return client;
     }
@@ -130,15 +130,15 @@ public final class AnnoHttpClients {
 	}
 
 	private static class InvocationHandlerHolder {
-        private static final AnnoHttpClientInvocationHandler INSTANCE_WITHOUT_BASE_URL = new AnnoHttpClientInvocationHandler("");
+        private static final AnnoHttpClientInvocationHandler INSTANCE_WITHOUT_BASE_URI = new AnnoHttpClientInvocationHandler("");
 
         private static final Map<String, AnnoHttpClientInvocationHandler> INSTANCES = new ConcurrentHashMap<>();
 
-        static AnnoHttpClientInvocationHandler getOrCreateAnnoHttpClientInvocationHandler(String baseUrl) {
-            if (null == baseUrl || "".equals(baseUrl.trim())) {
-                return INSTANCE_WITHOUT_BASE_URL;
+        static AnnoHttpClientInvocationHandler getOrCreateAnnoHttpClientInvocationHandler(String baseUri) {
+            if (null == baseUri || "".equals(baseUri.trim())) {
+                return INSTANCE_WITHOUT_BASE_URI;
             } else {
-                return INSTANCES.compute(baseUrl.toLowerCase().trim(), (s, annoHttpClientInvocationHandler) -> Objects.requireNonNullElseGet(annoHttpClientInvocationHandler, () -> new AnnoHttpClientInvocationHandler(baseUrl)));
+                return INSTANCES.compute(baseUri.toLowerCase().trim(), (s, annoHttpClientInvocationHandler) -> Objects.requireNonNullElseGet(annoHttpClientInvocationHandler, () -> new AnnoHttpClientInvocationHandler(baseUri)));
             }
         }
     }

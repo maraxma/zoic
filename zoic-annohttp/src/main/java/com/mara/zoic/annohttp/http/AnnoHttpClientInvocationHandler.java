@@ -11,15 +11,15 @@ import java.util.function.Function;
 
 public class AnnoHttpClientInvocationHandler implements InvocationHandler {
 
-    protected String baseUrl;
-    protected Function<HttpClientMetadata, String> baseUrlProvider;
+    protected String baseUri;
+    protected Function<HttpClientMetadata, String> baseUriProvider;
 
-    AnnoHttpClientInvocationHandler(String baseUrl) {
-        this.baseUrl = baseUrl;
+    AnnoHttpClientInvocationHandler(String baseUri) {
+        this.baseUri = baseUri;
     }
 
-    AnnoHttpClientInvocationHandler(Function<HttpClientMetadata, String> baseUrlProvider) {
-        this.baseUrlProvider = baseUrlProvider;
+    AnnoHttpClientInvocationHandler(Function<HttpClientMetadata, String> baseUriProvider) {
+        this.baseUriProvider = baseUriProvider;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class AnnoHttpClientInvocationHandler implements InvocationHandler {
             metadata.requestMethodReturnActualType = genericType;
         }
     	
-    	PreparingRequest<?> preparingRequest = new PreparingRequestImpl<>(metadata, method, args, baseUrl, baseUrlProvider);
+    	PreparingRequest<?> preparingRequest = new PreparingRequestImpl<>(metadata, method, args, baseUri, baseUriProvider);
 
 
         if (PreparingRequest.class.isAssignableFrom(returnType)) {
