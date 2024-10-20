@@ -1,5 +1,6 @@
 package com.mara.zoic.annohttp.lifecycle;
 
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpResponse;
 
 import com.mara.zoic.annohttp.http.HttpClientMetadata;
@@ -34,5 +35,5 @@ public interface AnnoHttpLifecycle {
      * @param httpResponse 响应体
      * @param responseConverter 自动计算出的响应体转换器
      */
-    void afterClientRequested(HttpClientMetadata httpClientMetadata, HttpResponse httpResponse, ResponseConverter responseConverter);
+    void afterClientRequested(HttpClientMetadata httpClientMetadata, ClassicHttpResponse httpResponse, ResponseConverter responseConverter);
 }
