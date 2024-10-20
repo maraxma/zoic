@@ -1,6 +1,6 @@
 package com.mara.zoic.annohttp;
 
-import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -41,7 +41,7 @@ public class AnnoHttpConfig {
 		}
 
 		@Override
-		public void afterClientRequested(HttpClientMetadata httpClientMetadata, HttpResponse httpResponse,
+		public void afterClientRequested(HttpClientMetadata httpClientMetadata, ClassicHttpResponse httpResponse,
 				ResponseConverter responseConverter) {
 
 		}

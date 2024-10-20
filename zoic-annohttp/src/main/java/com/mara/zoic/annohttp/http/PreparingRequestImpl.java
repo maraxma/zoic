@@ -1087,7 +1087,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
     	}
     }
     
-    protected void executeLifecycleAfterRequestedMethod(HttpResponse response, ResponseConverter responseConverter) {
+    protected void executeLifecycleAfterRequestedMethod(ClassicHttpResponse response, ResponseConverter responseConverter) {
     	for (AnnoHttpLifecycle lc : AnnoHttpLifecycleInstancesCahce.getAnnoHttpLifecycleInstances()) {
     		lc.afterClientRequested(metadata, response, responseConverter);
     	}

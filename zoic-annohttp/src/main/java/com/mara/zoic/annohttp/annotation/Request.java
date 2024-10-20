@@ -24,7 +24,7 @@ import java.util.concurrent.Executor;
  *         <tr><td>返回类型<td/><td>说明<td/></tr>
  *         <tr><td>{@link org.apache.hc.core5.http.Header}[]<td/><td>直接返回该次请求的所有响应头。用户可以通过它处理响应头。当然，响应头之外的内容直接被丢弃。<td/></tr>
  *         <tr><td>{@link org.apache.hc.core5.http.message.StatusLine}<td/><td>直接返回该次请求的状态行对象。用户可以通过它获得响应状态。当然，状态行之外的内容直接被丢弃。<td/></tr>
- *         <tr><td>{@link org.apache.hc.core5.http.ClassicHttpResponse}<td/><td>直接返回apache httpclient原生的 {@link org.apache.hc.core5.http.HttpResponse} 对象。通过该对象几乎可以达到最大的灵活处理。<td/></tr>
+ *         <tr><td>{@link org.apache.hc.core5.http.ClassicHttpResponse}<td/><td>直接返回apache httpclient原生的 {@link org.apache.hc.core5.http.ClassicHttpResponse} 对象。通过该对象几乎可以达到最大的灵活处理。<td/></tr>
  *         <tr><td>{@link java.io.InputStream}<td/><td>直接返回响应体 {@link java.io.InputStream} 输入流。用户可以通过它处理响应体。<td/></tr>
  *         <tr><td>PreparingRequest&lt;T&gt;<td/><td>返回annohttp提供的 {@link PreparingRequest} 实例。用户可以通过它发起异步请求以及获得可操作的响应体（{@link com.mara.zoic.annohttp.http.OperableHttpResponse}）。
  *         特别地，如果以此类型作为返回类型，在实际调用此方法的时候并不会直接发起请求，而是返回一个准备中的预请求对象PreparingRequest，只有当PreparingRequest中的request相关的方法被调用时才会真正发起请求。
