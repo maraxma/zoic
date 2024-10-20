@@ -29,7 +29,7 @@ public record OperableHttpResponse(ClassicHttpResponse httpResponse) implements 
 
     @Override
     public void setVersion(ProtocolVersion version) {
-
+    	httpResponse.setVersion(version);
     }
 
     @Override
@@ -44,7 +44,7 @@ public record OperableHttpResponse(ClassicHttpResponse httpResponse) implements 
 
     @Override
     public int countHeaders(String name) {
-        return 0;
+        return httpResponse.countHeaders(name);
     }
 
     @Override
@@ -59,7 +59,7 @@ public record OperableHttpResponse(ClassicHttpResponse httpResponse) implements 
 
     @Override
     public Header getHeader(String name) throws ProtocolException {
-        return null;
+        return httpResponse.getHeader(name);
     }
 
     @Override
@@ -69,12 +69,12 @@ public record OperableHttpResponse(ClassicHttpResponse httpResponse) implements 
 
     @Override
     public Iterator<Header> headerIterator() {
-        return null;
+        return httpResponse.headerIterator();
     }
 
     @Override
     public Iterator<Header> headerIterator(String name) {
-        return null;
+        return httpResponse.headerIterator(name);
     }
 
     @Override
@@ -89,32 +89,32 @@ public record OperableHttpResponse(ClassicHttpResponse httpResponse) implements 
 
     @Override
     public void addHeader(String name, Object value) {
-
+    	httpResponse.addHeader(name, value);
     }
 
     @Override
     public void setHeader(Header header) {
-
+    	httpResponse.setHeader(header);
     }
 
     @Override
     public void setHeader(String name, Object value) {
-
+    	httpResponse.setHeader(name, value);
     }
 
     @Override
     public void setHeaders(Header... headers) {
-
+    	httpResponse.setHeaders(headers);
     }
 
     @Override
     public boolean removeHeader(Header header) {
-        return false;
+        return httpResponse.removeHeader(header);
     }
 
     @Override
     public boolean removeHeaders(String name) {
-        return false;
+    	return httpResponse.removeHeaders(name);
     }
 
 
@@ -208,7 +208,7 @@ public record OperableHttpResponse(ClassicHttpResponse httpResponse) implements 
 
     @Override
     public HttpEntity getEntity() {
-        return null;
+        return httpResponse.getEntity();
     }
 
     @Override
