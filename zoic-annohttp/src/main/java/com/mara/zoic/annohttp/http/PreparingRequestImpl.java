@@ -987,7 +987,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
 
     protected void prepareRequestConfig() {
         // 处理超时设置
-        int requestTimeout = metadata.getRequestTimeoutInSeconds();
+        int requestTimeout = metadata.getConnectionRequestTimeoutInSeconds();
         if (requestTimeout != -1) {
             requestConfigBuilder.setConnectionRequestTimeout(requestTimeout, TimeUnit.SECONDS);
         }

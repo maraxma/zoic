@@ -28,8 +28,8 @@ public class AnnoHttpClientMetadata implements HttpClientMetadata {
     Method requestMethod;
     Object[] requestArguments;
     Type requestMethodReturnActualType;
-    int responseTimeoutInSeconds = -1;
-    int requestTimeoutInSeconds = -1;
+    int responseTimeoutInSeconds = 180;
+    int connectionRequestTimeoutInSeconds = 60;
 
     @Override
     public Class<?> getServiceClientClass() {
@@ -87,8 +87,8 @@ public class AnnoHttpClientMetadata implements HttpClientMetadata {
     }
 
     @Override
-    public int getRequestTimeoutInSeconds() {
-        return requestTimeoutInSeconds;
+    public int getConnectionRequestTimeoutInSeconds() {
+        return connectionRequestTimeoutInSeconds;
     }
 
     @Override

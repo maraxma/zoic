@@ -184,14 +184,14 @@ public @interface Request {
     String proxy() default "";
 
     /**
-     * 套接字超时时间。单位秒。默认为-1，代表使用默认的（或配置中）的时间。
+     * 请求获得连接的超时时间。单位秒。默认为180。
      */
-    int socketTimeoutInSeconds() default -1;
+    int connectionRequestTimeoutInSeconds() default 180;
 
     /**
-     * 连接超时时间。单位秒。默认为-1，代表使用默认的（或配置中）的时间。
+     * 等待响应的超时时间。单位秒。默认为60。
      */
-    int connectionTimeoutInSeconds() default -1;
+    int responseTimeoout() default 60;
 
     /**
      * 是否关闭跟随重定向。默认为false。

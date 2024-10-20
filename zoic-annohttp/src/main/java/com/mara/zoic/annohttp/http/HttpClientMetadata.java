@@ -61,7 +61,7 @@ public interface HttpClientMetadata {
      * 获得请求超时时间（秒）
      * @return 请求超时时间（秒）
      */
-    int getRequestTimeoutInSeconds();
+    int getConnectionRequestTimeoutInSeconds();
 
     /**
      * 是否跟随重定向

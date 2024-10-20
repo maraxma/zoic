@@ -37,6 +37,8 @@ public class AnnoHttpClientInvocationHandler implements InvocationHandler {
         metadata.requestMethod = method;
         metadata.requestArguments = args == null ? new Object[0] : Arrays.copyOf(args, args.length);
         metadata.requestAnnotation = requestAnno;
+        metadata.connectionRequestTimeoutInSeconds = requestAnno.connectionRequestTimeoutInSeconds();
+        metadata.responseTimeoutInSeconds = requestAnno.responseTimeoout();
         if (PreparingRequest.class.isAssignableFrom(returnType)) {
             // 需要构造PreparingRequest实例，延迟请求
             if (!(genericType instanceof ParameterizedType)) {
