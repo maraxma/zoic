@@ -1,30 +1,54 @@
 package com.mara.zoic.annohttp;
 
 
-import com.mara.zoic.annohttp.annotation.*;
-import com.mara.zoic.annohttp.http.*;
-import com.mara.zoic.annohttp.http.response.converter.ResponseConverter;
-import com.mara.zoic.annohttp.lifecycle.AnnoHttpLifecycle;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServer;
-import io.vertx.ext.web.Router;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.client5.http.entity.EntityBuilder;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpResponse;
-import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.message.BasicHeader;
 import org.apache.hc.core5.http.message.StatusLine;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
-import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Stream;
+import com.mara.zoic.annohttp.annotation.Body;
+import com.mara.zoic.annohttp.annotation.ContentTypeTextPlain;
+import com.mara.zoic.annohttp.annotation.FormField;
+import com.mara.zoic.annohttp.annotation.FormFields;
+import com.mara.zoic.annohttp.annotation.Header;
+import com.mara.zoic.annohttp.annotation.Headers;
+import com.mara.zoic.annohttp.annotation.Method;
+import com.mara.zoic.annohttp.annotation.Queries;
+import com.mara.zoic.annohttp.annotation.Query;
+import com.mara.zoic.annohttp.annotation.Request;
+import com.mara.zoic.annohttp.annotation.Uri;
+import com.mara.zoic.annohttp.http.AnnoHttpClients;
+import com.mara.zoic.annohttp.http.CoverableNameValuePair;
+import com.mara.zoic.annohttp.http.HttpClientMetadata;
+import com.mara.zoic.annohttp.http.HttpMethod;
+import com.mara.zoic.annohttp.http.PreparingRequest;
+import com.mara.zoic.annohttp.http.response.converter.ResponseConverter;
+import com.mara.zoic.annohttp.lifecycle.AnnoHttpLifecycle;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServer;
+import io.vertx.ext.web.Router;
 
 /**
  * 展示 annothttp 常规用法的测试类。
@@ -635,7 +659,7 @@ public class GenericUsageTest {
     		}
 
     		@Override
-    		public void afterClientRequested(HttpClientMetadata httpClientMetadata, HttpResponse httpResponse,
+    		public void afterClientRequested(HttpClientMetadata httpClientMetadata, ClassicHttpResponse httpResponse,
     				ResponseConverter responseConverter) {
 
     		}
