@@ -43,7 +43,9 @@ public class RequestRoutePlanner extends SystemDefaultRoutePlanner {
         }
         if (requestProxy != null && requestProxy.getProxyType() == RequestProxy.ProxyType.HTTP) {
             // 这里只处理HTTP类型的代理
-            LOGGER.debug("Using proxy: " + requestProxy);
+        	if (LOGGER.isDebugEnabled()) {
+        		LOGGER.debug("Using proxy: " + requestProxy);
+        	}
             if (requestProxy.withCredential()) {
                 HttpClientContext httpClientContext = (HttpClientContext) context;
                 BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
