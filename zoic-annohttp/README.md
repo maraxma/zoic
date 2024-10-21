@@ -6,7 +6,7 @@ annohttp 全称是 Annotation HTTP，是一个靠注解驱动的HTTP客户端，
 annohttp有如下的特性：
 - 全注解驱动
 - 支持自定义协议
-- 支持针对单个请求的代理设定
+- 支持针对单个请求的代理设定（多认证方式：UserName/Password、WindowsNT、BearerToken）
 - 支持自定义转换器
 - 支持静态和动态baseUri
 - 支持异步请求
@@ -441,14 +441,14 @@ public interface ItemService {
 
 ## 注解一览表
 
-可供使用的注解全部位于com.mara.zoic.annohttp.annotation包下。
+可供使用的注解全部位于 com.mara.zoic.annohttp.annotation 包下。
 
 | 名称               | 目标                          | 作用                           |
 |------------------|-----------------------------| ------------------------------ |
 | @Request         | 标注于接口的抽象方法上                 | 声明这是一个HTTP请求方法       |
 | @Body            | 标注于@Request修饰的方法的参数上        | 声明此参数是该HTTP请求的请求体 |
 | @AnnoHttpService | 标注于接口类型上 | 向Spring说明是一个HTTP服务 |
-| ... 不想写了，请参见源码   |                             |                                |
+| ... 不想写了，请参见 com.mara.zoic.annohttp.annotation 包下的所有注解类  |                             |                                |
 
 
 COPYRIGHT @ Mara.X.Ma 2022
