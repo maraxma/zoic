@@ -730,10 +730,10 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
             return (T) responseConverter.convert(httpResponse, metadata, computedResponseContentType, computedResponseCharset);
         } finally {
             // 出现或者不出现异常，视返回体的类型决定是否关闭资源
-            // 目前只有两种类型的返回不能关闭资源 1) InputStream  2) HttpResponse
+            // 目前只有两种类型的返回不能关闭资源 1) InputStream  2) ClassicHttpResponse
             if (userExpectedType instanceof @SuppressWarnings("rawtypes")Class clazz && (InputStream.class.isAssignableFrom(clazz) || ClassicHttpResponse.class.isAssignableFrom(clazz))) {
                 // 不消费Entity
-                LOGGER.warn("Using type '" + userExpectedType + "' as return type, you should close the HttpEntity/InputStream yourself");
+                LOGGER.warn("Using type '" + userExpectedType + "' as return type, you should close the HttpEntity/InputStream by yourself");
             } else {
                 EntityUtils.consumeQuietly(httpResponse.getEntity());
             }

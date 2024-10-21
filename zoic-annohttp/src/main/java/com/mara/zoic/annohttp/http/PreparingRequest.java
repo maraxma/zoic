@@ -56,7 +56,7 @@ public sealed interface PreparingRequest<T> permits PreparingRequestImpl {
     /**
      * 自定义HttpClient相关的配置。需要用户自己提供一个HttpClientBuilder实例。在配置完成后将以用户提供的建造者生产新HttpClient发起请求。</p>
      * <p>为了性能，annohttp采用单例的HttpClient发起所有相关的请求，但此方法会打破规则使用用户定义好的HttpClientBuilder生成新的HttpClient发起请求。</p>
-     * <p>一般情况下不推荐使用此方法，除非有annohttp不能解决的特殊需求。</p>
+     * <p style="color: red">特别注意：一般情况下不推荐使用此方法，除非有annohttp不能解决的特殊需求。<b>使用此方法后会导致内置的代理支持出现问题，用户需要自行处理，如果确实需要保持代理的正确性，请参见 {@link HttpClientBuilderEnhancer#enhance(HttpClientBuilder)} 方法的源码，或者直接调用此方法（与你的目的不冲突的话）。</b></p>
      * <p>和 Spring 进行相关集成的时候，因为某些配置是应用于内置的 HttpClientBuilder 上，因此使用此方法自定义 HttpClient 可能会导致书写在 Spring 配置文件中的某些配置失效。</p>
      *
      * @param httpClientBuilderSupplier HttpClient建造者提供器。

@@ -26,11 +26,16 @@ import java.util.concurrent.TimeUnit;
  */
 public class HttpClientBuilderEnhancer {
 
+	/**
+	 * 增强HttpClientBuilder，设定一些参数。
+	 * @param clientBuilder {@link HttpClientBuilder} 对象
+	 * @return
+	 */
     @SuppressWarnings("deprecation")
-	static HttpClientBuilder enhance(HttpClientBuilder clientBuilder) {
+	public static HttpClientBuilder enhance(HttpClientBuilder clientBuilder) {
         HttpsConnectionSocketFactory sslsf;
         try {
-            SSLContextBuilder builder = null;
+            SSLContextBuilder builder;
             builder = new SSLContextBuilder();
             // 全部信任 不做身份鉴定
             builder.loadTrustMaterial(null, (chain, authType) -> true);
