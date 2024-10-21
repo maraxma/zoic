@@ -56,8 +56,8 @@ public sealed interface PreparingRequest<T> permits PreparingRequestImpl {
     /**
      * 自定义HttpClient相关的配置。需要用户自己提供一个HttpClientBuilder实例。在配置完成后将以用户提供的建造者生产新HttpClient发起请求。</p>
      * <p>为了性能，annohttp采用单例的HttpClient发起所有相关的请求，但此方法会打破规则使用用户定义好的HttpClientBuilder生成新的HttpClient发起请求。</p>
-     * <p>推荐使用<code>HttpClientBuilderEnhancer.enhance(HttpClientBuilder.create())</code>来创建新的HttpClientBuilder。然后自定义配置并传入此方法。</p>
-     * <p>并不推荐使用此方法，因为比较消耗性能。</p>
+     * <p>一般情况下不推荐使用此方法，除非有annohttp不能解决的特殊需求。</p>
+     * <p>和 Spring 进行相关集成的时候，因为某些配置是应用于内置的 HttpClientBuilder 上，因此使用此方法自定义 HttpClient 可能会导致书写在 Spring 配置文件中的某些配置失效。</p>
      *
      * @param httpClientBuilderSupplier HttpClient建造者提供器。
      * @return {@link PreparingRequest} 本身
@@ -134,7 +134,7 @@ public sealed interface PreparingRequest<T> permits PreparingRequestImpl {
     PreparingRequest<T> customRequestConfig(Consumer<RequestConfig.Builder> requestConfigBuilderConsumer);
 
     /**
-     * 同步请求并接收ResponseBody。直接将响应体转换为用户定义在返回值中的形式。
+     * 同步请求并返回响应。直接将响应转换为用户定义在返回值中的形式。
      * <p>此方法可能会抛出三种类型的异常，但它们都是运行时异常，用户可以选择性处理。</p>
      *
      * @return 响应体
@@ -145,7 +145,7 @@ public sealed interface PreparingRequest<T> permits PreparingRequestImpl {
     T request() throws RequestFailedException, UnexpectedResponseException, ConversionException;
 
     /**
-     * 异步请求并接收ResponseBody。直接将响应体转换为用户定义在返回值中的形式。这是 {@link #request()} 方法的异步版本。
+     * 异步请求并返回响应。直接将响应转换为用户定义在返回值中的形式。这是 {@link #request()} 方法的异步版本。
      *
      * @param executorService 线程池
      * @return 未来对象
@@ -154,7 +154,7 @@ public sealed interface PreparingRequest<T> permits PreparingRequestImpl {
     CompletableFuture<T> requestAsync(Executor executorService);
 
     /**
-     * 异步请求并接收ResponseBody（带回调）。直接将响应体转换为用户定义在返回值中的形式。这是 {@link #request()} 方法的异步版本。
+     * 异步请求并返回响应（带回调）。直接将响应转换为用户定义在返回值中的形式。这是 {@link #request()} 方法的异步版本。
      *
      * @param executorService 线程池
      * @param resultConsumer  结果消费器
@@ -162,7 +162,7 @@ public sealed interface PreparingRequest<T> permits PreparingRequestImpl {
     void requestAsync(Executor executorService, Consumer<T> resultConsumer);
 
     /**
-     * 同步请求返回经典的 {@link ClassicHttpResponse} 实例。用户需要自行处理响应<b>并在使用完毕后关闭相关的资源。</b>
+     * 同步请求并返回经典的 {@link ClassicHttpResponse} 实例。用户需要自行处理响应<b>并在使用完毕后关闭相关的资源。</b>
      * <p><b>需要特别注意的是， {@link Request#successCondition()} 不对此方法的请求过程生效。</b>
      * @return {@link ClassicHttpResponse} 实例
      */
@@ -185,7 +185,7 @@ public sealed interface PreparingRequest<T> permits PreparingRequestImpl {
     void requestClassicallyAsync(Executor executorService, Consumer<ClassicHttpResponse> resultConsumer);
 
     /**
-     * 发起同步请求，在请求成功后获得一个可直接操作返回体的 {@link OperableHttpResponse} 对象。
+     * 发起同步请求，在请求成功后获得一个可直接操作响应的 {@link OperableHttpResponse} 对象。
      *
      * @return {@link OperableHttpResponse} 对象
      */
