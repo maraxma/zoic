@@ -395,12 +395,12 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                 Class<?> parameterType = parameter.getType();
                 if (Header.class.isAssignableFrom(parameterType)) {
                 	Header header = (Header) args[i];
-                	addCoverableHeader(headers, new CoverableNameValuePair(header.getName(), header.getValue()));
+                	addCoverable(headers, new CoverableNameValuePair(header.getName(), header.getValue()));
                 }
                 if (Header[].class.isAssignableFrom(parameterType)) {
                 	Header[] hs = (Header[]) args[i];
                 	for (Header h : hs) {
-                		addCoverableHeader(headers, new CoverableNameValuePair(h.getName(), h.getValue()));
+                		addCoverable(headers, new CoverableNameValuePair(h.getName(), h.getValue()));
 					}
                 }
                 if (parameter.isAnnotationPresent(com.mara.zoic.annohttp.annotation.Header.class)) {
@@ -416,7 +416,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                     if (annoHeaderName == null || (annoHeaderName = annoHeaderName.trim()).isEmpty()) {
                         throw new IllegalArgumentException("Header name cannot be null or empty: " + parameter.getName());
                     }
-                    addCoverableHeader(headers, new CoverableNameValuePair(annoHeaderName, argHeaderValue));
+                    addCoverable(headers, new CoverableNameValuePair(annoHeaderName, argHeaderValue));
                 }
                 if (parameter.isAnnotationPresent(Headers.class)) {
                     if (!Map.class.isAssignableFrom(parameterType) && !String[].class.isAssignableFrom(parameterType)) {
@@ -425,14 +425,14 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                     if (String[].class.isAssignableFrom(parameterType)) {
                         String[] headerArray = (String[]) args[i];
                         for (String s : headerArray) {
-                            addCoverableHeader(headers, getHeaderFromStringStyled(s, headerCoverable));
+                            addCoverable(headers, getHeaderFromStringStyled(s, headerCoverable));
                         }
                     } else {
                         @SuppressWarnings("unchecked")
                         Map<String, String> headerMap = (Map<String, String>) args[i];
                         headerMap.forEach((k, v) -> {
                             checkHeader(k, v);
-                            addCoverableHeader(headers, new CoverableNameValuePair(k, v, headerCoverable));
+                            addCoverable(headers, new CoverableNameValuePair(k, v, headerCoverable));
                         });
                     }
                 }
@@ -446,7 +446,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                 if (annoHeaders.length != 0) {
                     for (String annoHeader : annoHeaders) {
                         CoverableNameValuePair h = getHeaderFromStringStyled(annoHeader, headerCoverable);
-                        addCoverableHeader(headers, h);
+                        addCoverable(headers, h);
                     }
                 } else {
                     if (!annoSpelHeaders.isBlank()) {
@@ -456,7 +456,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                             Map<String, Object> m = ((Map<String, Object>) spelRes);
                             m.forEach((k, v) -> {
                                 checkHeader(k, v);
-                                addCoverableHeader(headers, new CoverableNameValuePair(k, String.valueOf(v), false));
+                                addCoverable(headers, new CoverableNameValuePair(k, String.valueOf(v), false));
                             });
                         } else if (spelRes instanceof Object[] array) {
                             for (Object o : array) {
@@ -482,7 +482,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                                 if (headerInvalid) {
                                     throw new IllegalArgumentException("Your header on @Request headerSpel is invalid, please check: " + m);
                                 }
-                                addCoverableHeader(headers, new CoverableNameValuePair(headerName, headerValue, coverable));
+                                addCoverable(headers, new CoverableNameValuePair(headerName, headerValue, coverable));
                             }
                         }
                     }
@@ -526,7 +526,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
             }
 
             // 注意优先级，注解指定ContentType的优先级是最低的
-            addCoverableHeader(existingHeaders, new CoverableNameValuePair(HttpHeaders.CONTENT_TYPE, contentType.toString(), requestAnno.headerCoverable()));
+            addCoverable(existingHeaders, new CoverableNameValuePair(HttpHeaders.CONTENT_TYPE, contentType.toString(), requestAnno.headerCoverable()));
         }
     }
 
@@ -558,7 +558,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                     if (qKey == null || qKey.isBlank()) {
                         throw new IllegalArgumentException("Query parameter's key cannot be null or empty");
                     }
-                    addCoverableHeader(queries, new CoverableNameValuePair(qKey, (String) args[i], queryCoverable));
+                    addCoverable(queries, new CoverableNameValuePair(qKey, (String) args[i], queryCoverable));
                 } else if (parameter.isAnnotationPresent(Queries.class)) {
                     if (parameter.isAnnotationPresent(Query.class)) {
                         throw new IllegalArgumentException("You can only use one of @Query & @Queries");
@@ -572,14 +572,14 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                         String queryName = en.getKey();
                         String queryValue = en.getValue();
                         checkQueryParameter(queryName, queryValue);
-                        addCoverableHeader(queries, new CoverableNameValuePair(queryName, queryValue, queryCoverable));
+                        addCoverable(queries, new CoverableNameValuePair(queryName, queryValue, queryCoverable));
                     }
                 }
             }
             // 5.2 处理@Request.queries
             String[] annoQueries = requestAnno.queries();
             for (String q : annoQueries) {
-                addCoverableHeader(queries, getQueryParameterFromStringStyled(q, queryCoverable));
+                addCoverable(queries, getQueryParameterFromStringStyled(q, queryCoverable));
             }
             // 5.3 处理@Request.queriesSpel
             String queriesSpel = requestAnno.queriesSpel();
@@ -592,7 +592,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                         String queryName = entry.getKey();
                         String queryValue = entry.getValue();
                         checkQueryParameter(queryName, queryValue);
-                        addCoverableHeader(queries, new CoverableNameValuePair(queryName, queryValue));
+                        addCoverable(queries, new CoverableNameValuePair(queryName, queryValue));
                     }
                 } else if (res instanceof List) {
                     @SuppressWarnings("unchecked")
@@ -602,7 +602,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
                         String queryValue = (String) map.get("value");
                         checkQueryParameter(queryName, queryValue);
                         boolean coverable = Boolean.parseBoolean((String) map.get("coverable"));
-                        addCoverableHeader(queries, new CoverableNameValuePair(queryName, queryValue, coverable));
+                        addCoverable(queries, new CoverableNameValuePair(queryName, queryValue, coverable));
                     }
                 }
             }
@@ -1093,7 +1093,7 @@ non-sealed class PreparingRequestImpl<T> implements PreparingRequest<T> {
     	}
     }
 
-    private void addCoverableHeader(List<CoverableNameValuePair> existing, CoverableNameValuePair incoming) {
+    private void addCoverable(List<CoverableNameValuePair> existing, CoverableNameValuePair incoming) {
         if (incoming == null) {
             throw new IllegalArgumentException("Incoming coverable header/query parameter cannot be null");
         }
