@@ -1,7 +1,6 @@
 package com.mara.zoic.annohttp.lifecycle;
 
 import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.apache.hc.core5.http.HttpResponse;
 
 import com.mara.zoic.annohttp.http.HttpClientMetadata;
 import com.mara.zoic.annohttp.http.PreparingRequest;
